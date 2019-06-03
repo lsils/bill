@@ -86,7 +86,7 @@ TEMPLATE_TEST_CASE("Incremental", "[sat][template]",
 	r = solver.solve();
 	CHECK(r.is_satisfiable());
 
-	add_tseitin_xor(solver, t0, t1);
-	r = solver.solve();
+	auto const t2 = add_tseitin_xor(solver, t0, t1);
+	r = solver.solve(std::vector({t2}));
 	CHECK(r.is_unsatisfiable());
 }
