@@ -1,0 +1,14 @@
+**/*~
+**/.DS_Store
+**/.dir-locals.el
+**/_*
+
+.vscode/
+
+build/
+docs/.venv
+docs/_build
+docs/doxyxml
+examples/*
+!examples/CMakeLists.txt
+experiments/*/
