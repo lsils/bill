@@ -1,3 +1,3 @@
 [![License](https://img.shields.io/badge/license-MIT-000000.svg)](https://opensource.org/licenses/MIT)
 
-In the beginning there was only darkness.
+bill is a header-only reasoning library.  The library serves as an integration layer for various reasoning engines and provides unified interfaces.
