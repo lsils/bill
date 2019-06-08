@@ -4,9 +4,21 @@
 *------------------------------------------------------------------------------------------------*/
 #pragma once
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdangling-else"
+#pragma GCC diagnostic ignored "-Wreorder"
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Wunused-comparison"
+#pragma GCC diagnostic ignored "-Wunused-label"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-value"
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wzero-length-array"
 #include "sat_solvers/ghack.hpp"
 #include "sat_solvers/glucose.hpp"
 #include "sat_solvers/maple.hpp"
+#pragma GCC diagnostic pop
+
 #include "types.hpp"
 
 #include <cstdint>
