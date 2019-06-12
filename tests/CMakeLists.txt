@@ -2,7 +2,6 @@
 # CMake build : bill library tests
 add_compile_options(
   -fno-rtti
-  -W
   -Wall
   -pedantic)
 
