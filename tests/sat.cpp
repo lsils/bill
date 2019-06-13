@@ -52,8 +52,29 @@ lit_type add_tseitin_equals(Solver& solver, lit_type const& a, lit_type const& b
 	return lit_type(r, lit_type::polarities::positive);
 }
 
-TEMPLATE_TEST_CASE("De Morgan", "[sat][template]",
-                   solver<solvers::glucose_41>, solver<solvers::ghack>, solver<solvers::maple>)
+TEMPLATE_TEST_CASE("Simple SAT", "[sat][template]", solver<solvers::glucose_41>,
+                   solver<solvers::ghack>, solver<solvers::maple>)
+{
+	TestType solver;
+	auto const r = solver.solve();
+	CHECK(r.is_satisfiable());
+}
+
+TEMPLATE_TEST_CASE("Simple UNSAT", "[sat][template]", solver<solvers::glucose_41>,
+                   solver<solvers::ghack>, solver<solvers::maple>)
+{
+	TestType solver;
+
+	auto const a = lit_type(solver.add_variable(), lit_type::polarities::positive);
+	solver.add_clause(a);
+	solver.add_clause(~a);
+
+	auto const r = solver.solve();
+	CHECK(r.is_unsatisfiable());
+}
+
+TEMPLATE_TEST_CASE("De Morgan", "[sat][template]", solver<solvers::glucose_41>,
+                   solver<solvers::ghack>, solver<solvers::maple>)
 {
 	TestType solver;
 
@@ -87,6 +108,7 @@ TEMPLATE_TEST_CASE("Incremental", "[sat][template]",
 	CHECK(r.is_satisfiable());
 
 	auto const t2 = add_tseitin_xor(solver, t0, t1);
-	r = solver.solve(std::vector({t2}));
+	solver.add_clause(t2);
+	r = solver.solve();
 	CHECK(r.is_unsatisfiable());
 }
