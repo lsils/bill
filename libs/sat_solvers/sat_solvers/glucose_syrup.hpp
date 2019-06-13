@@ -208,7 +208,7 @@ public:
 
 
 template<class T>
-void vec<T>::capacity(int min_cap) {
+inline void vec<T>::capacity(int min_cap) {
     if (cap >= min_cap) return;
     int add = imax((min_cap - cap + 1) & ~1, ((cap >> 1) + 2) & ~1);   // NOTE: grow by approximately 3/2
     if (add > INT_MAX - cap || (((data = (T*)::realloc(data, (cap += add) * sizeof(T))) == NULL) && errno == ENOMEM))
@@ -217,7 +217,7 @@ void vec<T>::capacity(int min_cap) {
 
 
 template<class T>
-void vec<T>::growTo(int size, const T& pad) {
+inline void vec<T>::growTo(int size, const T& pad) {
     if (sz >= size) return;
     capacity(size);
     for (int i = sz; i < size; i++) data[i] = pad;
@@ -225,7 +225,7 @@ void vec<T>::growTo(int size, const T& pad) {
 
 
 template<class T>
-void vec<T>::growTo(int size) {
+inline void vec<T>::growTo(int size) {
     if (sz >= size) return;
     capacity(size);
     for (int i = sz; i < size; i++) new (&data[i]) T();
@@ -233,7 +233,7 @@ void vec<T>::growTo(int size) {
 
 
 template<class T>
-void vec<T>::clear(bool dealloc) {
+inline void vec<T>::clear(bool dealloc) {
     if (data != NULL){
         for (int i = 0; i < sz; i++) data[i].~T();
         sz = 0;
@@ -423,7 +423,7 @@ class RegionAllocator
 };
 
 template<class T>
-void RegionAllocator<T>::capacity(uint32_t min_cap)
+inline void RegionAllocator<T>::capacity(uint32_t min_cap)
 {
     if (cap >= min_cap) return;
     uint32_t prev_cap = cap;
@@ -446,7 +446,7 @@ void RegionAllocator<T>::capacity(uint32_t min_cap)
 
 
 template<class T>
-typename RegionAllocator<T>::Ref
+inline typename RegionAllocator<T>::Ref
 RegionAllocator<T>::alloc(int size)
 { 
     //printf("ALLOC called (this = %p, size = %d)\n", this, size); fflush(stdout);
@@ -948,7 +948,7 @@ struct LessThan_default {
 
 
 template <class T, class LessThan>
-void selectionSort(T* array, int size, LessThan lt)
+inline void selectionSort(T* array, int size, LessThan lt)
 {
     int     i, j, best_i;
     T       tmp;
@@ -966,7 +966,7 @@ template <class T> static inline void selectionSort(T* array, int size) {
     selectionSort(array, size, LessThan_default<T>()); }
 
 template <class T, class LessThan>
-void sort(T* array, int size, LessThan lt)
+inline void sort(T* array, int size, LessThan lt)
 {
     if (size <= 15)
         selectionSort(array, size, lt);
@@ -4343,30 +4343,30 @@ static inline int memReadPeak(void)
 
 }
 
-double Glucose::memUsed() { return (double)memReadStat(0) * (double)getpagesize() / (1024*1024); }
-double Glucose::memUsedPeak() { 
+inline double Glucose::memUsed() { return (double)memReadStat(0) * (double)getpagesize() / (1024*1024); }
+inline double Glucose::memUsedPeak() { 
     double peak = memReadPeak() / 1024;
     return peak == 0 ? memUsed() : peak; }
 
 #elif defined(__FreeBSD__)
 
-double Glucose::memUsed(void) {
+inline double Glucose::memUsed(void) {
     struct rusage ru;
     getrusage(RUSAGE_SELF, &ru);
     return (double)ru.ru_maxrss / 1024; }
-double MiniSat::memUsedPeak(void) { return memUsed(); }
+inline double MiniSat::memUsedPeak(void) { return memUsed(); }
 
 
 #elif defined(__APPLE__)
 #include <malloc/malloc.h>
 
-  double Glucose::memUsed(void) {
+inline double Glucose::memUsed(void) {
     malloc_statistics_t t;
     malloc_zone_statistics(NULL, &t);
     return (double)t.max_size_in_use / (1024*1024); }
 
 #else
-double Glucose::memUsed() { 
+inline double Glucose::memUsed() { 
     return 0; }
 #endif
 
@@ -4832,7 +4832,7 @@ inline bool Solver::addClause_(vec <Lit> &ps) {
 }
 
 
-void Solver::attachClause(CRef cr) {
+inline void Solver::attachClause(CRef cr) {
     const Clause &c = ca[cr];
 
     assert(c.size() > 1);
@@ -4848,7 +4848,7 @@ void Solver::attachClause(CRef cr) {
 }
 
 
-void Solver::attachClausePurgatory(CRef cr) {
+inline void Solver::attachClausePurgatory(CRef cr) {
     const Clause &c = ca[cr];
 
     assert(c.size() > 1);
@@ -4857,7 +4857,7 @@ void Solver::attachClausePurgatory(CRef cr) {
 }
 
 
-void Solver::detachClause(CRef cr, bool strict) {
+inline void Solver::detachClause(CRef cr, bool strict) {
     const Clause &c = ca[cr];
 
     assert(c.size() > 1);
@@ -4887,7 +4887,7 @@ void Solver::detachClause(CRef cr, bool strict) {
 
 // The purgatory is the 1-Watched scheme for imported clauses
 
-void Solver::detachClausePurgatory(CRef cr, bool strict) {
+inline void Solver::detachClausePurgatory(CRef cr, bool strict) {
     const Clause &c = ca[cr];
 
     assert(c.size() > 1);
@@ -4898,7 +4898,7 @@ void Solver::detachClausePurgatory(CRef cr, bool strict) {
 }
 
 
-void Solver::removeClause(CRef cr, bool inPurgatory) {
+inline void Solver::removeClause(CRef cr, bool inPurgatory) {
 
     Clause &c = ca[cr];
 
@@ -4928,7 +4928,7 @@ void Solver::removeClause(CRef cr, bool inPurgatory) {
 }
 
 
-bool Solver::satisfied(const Clause &c) const {
+inline bool Solver::satisfied(const Clause &c) const {
 #ifdef INCREMENTAL
     if(incremental)
         return (value(c[0]) == l_True) || (value(c[1]) == l_True);
@@ -4983,7 +4983,7 @@ template <typename T>inline unsigned int Solver::computeLBD(const T &lits, int e
 /******************************************************************
  * Minimisation with binary reolution
  ******************************************************************/
-void Solver::minimisationWithBinaryResolution(vec <Lit> &out_learnt) {
+inline void Solver::minimisationWithBinaryResolution(vec <Lit> &out_learnt) {
 
     // Find the LBD measure
     unsigned int lbd = computeLBD(out_learnt);
@@ -5027,7 +5027,7 @@ void Solver::minimisationWithBinaryResolution(vec <Lit> &out_learnt) {
 // Revert to the state at given level (keeping all assignment at 'level' but not beyond).
 //
 
-void Solver::cancelUntil(int level) {
+inline void Solver::cancelUntil(int level) {
     if(decisionLevel() > level) {
         for(int c = trail.size() - 1; c >= trail_lim[level]; c--) {
             Var x = var(trail[c]);
@@ -5047,7 +5047,7 @@ void Solver::cancelUntil(int level) {
 //=================================================================================================
 // Major methods:
 
-Lit Solver::pickBranchLit() {
+inline Lit Solver::pickBranchLit() {
     Var next = var_Undef;
 
     // Random decision:
@@ -5104,7 +5104,7 @@ Lit Solver::pickBranchLit() {
 |        rest of literals. There may be others from the same level though.
 |  
 |________________________________________________________________________________________________@*/
-void Solver::analyze(CRef confl, vec <Lit> &out_learnt, vec <Lit> &selectors, int &out_btlevel, unsigned int &lbd, unsigned int &szWithoutSelectors) {
+inline void Solver::analyze(CRef confl, vec <Lit> &out_learnt, vec <Lit> &selectors, int &out_btlevel, unsigned int &lbd, unsigned int &szWithoutSelectors) {
     int pathC = 0;
     Lit p = lit_Undef;
 
@@ -5295,7 +5295,7 @@ void Solver::analyze(CRef confl, vec <Lit> &out_learnt, vec <Lit> &selectors, in
 // Check if 'p' can be removed. 'abstract_levels' is used to abort early if the algorithm is
 // visiting literals at levels that cannot be removed later.
 
-bool Solver::litRedundant(Lit p, uint32_t abstract_levels) {
+inline bool Solver::litRedundant(Lit p, uint32_t abstract_levels) {
     analyze_stack.clear();
     analyze_stack.push(p);
     int top = analyze_toclear.size();
@@ -5341,7 +5341,7 @@ bool Solver::litRedundant(Lit p, uint32_t abstract_levels) {
 |    Calculates the (possibly empty) set of assumptions that led to the assignment of 'p', and
 |    stores the result in 'out_conflict'.
 |________________________________________________________________________________________________@*/
-void Solver::analyzeFinal(Lit p, vec <Lit> &out_conflict) {
+inline void Solver::analyzeFinal(Lit p, vec <Lit> &out_conflict) {
     out_conflict.clear();
     out_conflict.push(p);
 
@@ -5374,7 +5374,7 @@ void Solver::analyzeFinal(Lit p, vec <Lit> &out_conflict) {
 }
 
 
-void Solver::uncheckedEnqueue(Lit p, CRef from) {
+inline void Solver::uncheckedEnqueue(Lit p, CRef from) {
     assert(value(p) == l_Undef);
     assigns[var(p)] = lbool(!sign(p));
     vardata[var(p)] = mkVarData(from, decisionLevel());
@@ -5382,7 +5382,7 @@ void Solver::uncheckedEnqueue(Lit p, CRef from) {
 }
 
 
-void Solver::bumpForceUNSAT(Lit q) {
+inline void Solver::bumpForceUNSAT(Lit q) {
     forceUNSAT[var(q)] = sign(q) ? -1 : +1;
     return;
 }
@@ -5399,7 +5399,7 @@ void Solver::bumpForceUNSAT(Lit q) {
 |    Post-conditions:
 |      * the propagation queue is empty, even if there was a conflict.
 |________________________________________________________________________________________________@*/
-CRef Solver::propagate() {
+inline CRef Solver::propagate() {
     CRef confl = CRef_Undef;
     int num_props = 0;
     watches.cleanAll();
@@ -5723,7 +5723,7 @@ inline bool Solver::simplify() {
 }
 
 
-void Solver::adaptSolver() {
+inline void Solver::adaptSolver() {
     bool adjusted = false;
     bool reinit = false;
     printf("c\nc Try to adapt solver strategies\nc \n");
@@ -5832,7 +5832,7 @@ void Solver::adaptSolver() {
 |    all variables are decision variables, this means that the clause set is satisfiable. 'l_False'
 |    if the clause set is unsatisfiable. 'l_Undef' if the bound on number of conflicts is reached.
 |________________________________________________________________________________________________@*/
-lbool Solver::search(int nof_conflicts) {
+inline lbool Solver::search(int nof_conflicts) {
     assert(ok);
     int backtrack_level;
     int conflictC = 0;
@@ -6032,7 +6032,7 @@ lbool Solver::search(int nof_conflicts) {
 }
 
 
-double Solver::progressEstimate() const {
+inline double Solver::progressEstimate() const {
     double progress = 0;
     double F = 1.0 / nVars();
 
@@ -6046,7 +6046,7 @@ double Solver::progressEstimate() const {
 }
 
 
-void Solver::printIncrementalStats() {
+inline void Solver::printIncrementalStats() {
 
     printf("c---------- Glucose Stats -------------------------\n");
     printf("c restarts              : %"
@@ -6085,7 +6085,7 @@ void Solver::printIncrementalStats() {
 }
 
 
-double Solver::luby(double y, int x) {
+inline double Solver::luby(double y, int x) {
 
     // Find the finite subsequence that contains index 'x', and the
     // size of that subsequence:
@@ -6104,7 +6104,7 @@ double Solver::luby(double y, int x) {
 
 // NOTE: assumptions passed in member-variable 'assumptions'.
 
-lbool Solver::solve_(bool do_simp, bool turn_off_simp) // Parameters are useless in core but useful for SimpSolver....
+inline lbool Solver::solve_(bool do_simp, bool turn_off_simp) // Parameters are useless in core but useful for SimpSolver....
 {
 
     if(incremental && certifiedUNSAT) {
@@ -6218,7 +6218,7 @@ lbool Solver::solve_(bool do_simp, bool turn_off_simp) // Parameters are useless
 // 
 // FIXME: this needs to be rewritten completely.
 
-static Var mapVar(Var x, vec <Var> &map, Var &max) {
+inline static Var mapVar(Var x, vec <Var> &map, Var &max) {
     if(map.size() <= x || map[x] == -1) {
         map.growTo(x + 1, -1);
         map[x] = max++;
@@ -6227,7 +6227,7 @@ static Var mapVar(Var x, vec <Var> &map, Var &max) {
 }
 
 
-void Solver::toDimacs(FILE *f, Clause &c, vec <Var> &map, Var &max) {
+inline void Solver::toDimacs(FILE *f, Clause &c, vec <Var> &map, Var &max) {
     if(satisfied(c)) return;
 
     for(int i = 0; i < c.size(); i++)
@@ -6237,7 +6237,7 @@ void Solver::toDimacs(FILE *f, Clause &c, vec <Var> &map, Var &max) {
 }
 
 
-void Solver::toDimacs(const char *file, const vec <Lit> &assumps) {
+inline void Solver::toDimacs(const char *file, const vec <Lit> &assumps) {
     FILE *f = fopen(file, "wr");
     if(f == NULL)
         fprintf(stderr, "could not open file %s\n", file), exit(1);
@@ -6246,7 +6246,7 @@ void Solver::toDimacs(const char *file, const vec <Lit> &assumps) {
 }
 
 
-void Solver::toDimacs(FILE *f, const vec <Lit> &assumps) {
+inline void Solver::toDimacs(FILE *f, const vec <Lit> &assumps) {
     // Handle case when solver is in contradictory state:
     if(!ok) {
         fprintf(f, "p cnf 1 2\n1 0\n-1 0\n");
@@ -6292,7 +6292,7 @@ void Solver::toDimacs(FILE *f, const vec <Lit> &assumps) {
 //=================================================================================================
 // Garbage Collection methods:
 
-void Solver::relocAll(ClauseAllocator &to) {
+inline void Solver::relocAll(ClauseAllocator &to) {
     // All watchers:
     // for (int i = 0; i < watches.size(); i++)
     watches.cleanAll();
@@ -6340,7 +6340,7 @@ void Solver::relocAll(ClauseAllocator &to) {
 }
 
 
-void Solver::garbageCollect() {
+inline void Solver::garbageCollect() {
     // Initialize the next region to a size corresponding to the estimated utilization degree. This
     // is not precise but should avoid some unnecessary reallocations for the new region:
     ClauseAllocator to(ca.size() - ca.wasted());
@@ -6357,35 +6357,35 @@ void Solver::garbageCollect() {
 // Keep them empty if you just use core solver
 //--------------------------------------------------------------
 
-bool Solver::panicModeIsEnabled() {
+inline bool Solver::panicModeIsEnabled() {
     return false;
 }
 
 
-void Solver::parallelImportUnaryClauses() {
+inline void Solver::parallelImportUnaryClauses() {
 }
 
 
-bool Solver::parallelImportClauses() {
+inline bool Solver::parallelImportClauses() {
     return false;
 }
 
 
-void Solver::parallelExportUnaryClause(Lit p) {
+inline void Solver::parallelExportUnaryClause(Lit p) {
 }
 
 
-void Solver::parallelExportClauseDuringSearch(Clause &c) {
+inline void Solver::parallelExportClauseDuringSearch(Clause &c) {
 }
 
 
-bool Solver::parallelJobIsFinished() {
+inline bool Solver::parallelJobIsFinished() {
     // Parallel: another job has finished let's quit
     return false;
 }
 
 
-void Solver::parallelImportClauseDuringConflictAnalysis(Clause &c, CRef confl) {
+inline void Solver::parallelImportClauseDuringConflictAnalysis(Clause &c, CRef confl) {
 }
 } // using namespace Glucose
 /***************************************************************************************[SimpSolver.cc]
@@ -6462,7 +6462,7 @@ static DoubleOption opt_simp_garbage_frac(_cat, "simp-gc-frac", "The fraction of
 // Constructor/Destructor:
 
 
-SimpSolver::SimpSolver() :
+inline SimpSolver::SimpSolver() :
    Solver()
   , grow               (opt_grow)
   , clause_lim         (opt_clause_lim)
@@ -6488,13 +6488,13 @@ SimpSolver::SimpSolver() :
 }
 
 
-SimpSolver::~SimpSolver()
+inline SimpSolver::~SimpSolver()
 {
 }
 
 
 
-SimpSolver::SimpSolver(const SimpSolver &s) : Solver(s)
+inline SimpSolver::SimpSolver(const SimpSolver &s) : Solver(s)
   , grow               (s.grow)
   , clause_lim         (s.clause_lim)
   , subsumption_lim    (s.subsumption_lim)
@@ -6539,7 +6539,7 @@ SimpSolver::SimpSolver(const SimpSolver &s) : Solver(s)
 
 
 
-Var SimpSolver::newVar(bool sign, bool dvar) {
+inline Var SimpSolver::newVar(bool sign, bool dvar) {
     Var v = Solver::newVar(sign, dvar);
     frozen    .push((char)false);
     eliminated.push((char)false);
@@ -6553,7 +6553,7 @@ Var SimpSolver::newVar(bool sign, bool dvar) {
     }
     return v; }
 
-lbool SimpSolver::solve_(bool do_simp, bool turn_off_simp)
+inline lbool SimpSolver::solve_(bool do_simp, bool turn_off_simp)
 {
     vec<Var> extra_frozen;
     lbool    result = l_True;
@@ -6595,7 +6595,7 @@ lbool SimpSolver::solve_(bool do_simp, bool turn_off_simp)
 
 
 
-bool SimpSolver::addClause_(vec<Lit>& ps)
+inline bool SimpSolver::addClause_(vec<Lit>& ps)
 {
 #ifndef NDEBUG
     for (int i = 0; i < ps.size(); i++)
@@ -6649,7 +6649,7 @@ bool SimpSolver::addClause_(vec<Lit>& ps)
 
 
 
-void SimpSolver::removeClause(CRef cr,bool inPurgatory)
+inline void SimpSolver::removeClause(CRef cr,bool inPurgatory)
 {
     const Clause& c = ca[cr];
 
@@ -6664,7 +6664,7 @@ void SimpSolver::removeClause(CRef cr,bool inPurgatory)
 }
 
 
-bool SimpSolver::strengthenClause(CRef cr, Lit l)
+inline bool SimpSolver::strengthenClause(CRef cr, Lit l)
 {
     Clause& c = ca[cr];
     assert(decisionLevel() == 0);
@@ -6720,7 +6720,7 @@ bool SimpSolver::strengthenClause(CRef cr, Lit l)
 
 
 // Returns FALSE if clause is always satisfied ('out_clause' should not be used).
-bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, vec<Lit>& out_clause)
+inline bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, vec<Lit>& out_clause)
 {
     merges++;
     out_clause.clear();
@@ -6751,7 +6751,7 @@ bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, vec<Lit>& ou
 
 
 // Returns FALSE if clause is always satisfied.
-bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, int& size)
+inline bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, int& size)
 {
     merges++;
 
@@ -6780,7 +6780,7 @@ bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, int& size)
 }
 
 
-void SimpSolver::gatherTouchedClauses()
+inline void SimpSolver::gatherTouchedClauses()
 {
     if (n_touched == 0) return;
 
@@ -6808,7 +6808,7 @@ void SimpSolver::gatherTouchedClauses()
 }
 
 
-bool SimpSolver::implied(const vec<Lit>& c)
+inline bool SimpSolver::implied(const vec<Lit>& c)
 {
     assert(decisionLevel() == 0);
 
@@ -6829,7 +6829,7 @@ bool SimpSolver::implied(const vec<Lit>& c)
 
 
 // Backward subsumption + backward subsumption resolution
-bool SimpSolver::backwardSubsumptionCheck(bool verbose)
+inline bool SimpSolver::backwardSubsumptionCheck(bool verbose)
 {
     int cnt = 0;
     int subsumed = 0;
@@ -6896,7 +6896,7 @@ bool SimpSolver::backwardSubsumptionCheck(bool verbose)
 }
 
 
-bool SimpSolver::asymm(Var v, CRef cr)
+inline bool SimpSolver::asymm(Var v, CRef cr)
 {
     Clause& c = ca[cr];
     assert(decisionLevel() == 0);
@@ -6923,7 +6923,7 @@ bool SimpSolver::asymm(Var v, CRef cr)
 }
 
 
-bool SimpSolver::asymmVar(Var v)
+inline bool SimpSolver::asymmVar(Var v)
 {
     assert(use_simplification);
 
@@ -6940,14 +6940,14 @@ bool SimpSolver::asymmVar(Var v)
 }
 
 
-static void mkElimClause(vec<uint32_t>& elimclauses, Lit x)
+inline static void mkElimClause(vec<uint32_t>& elimclauses, Lit x)
 {
     elimclauses.push(toInt(x));
     elimclauses.push(1);
 }
 
 
-static void mkElimClause(vec<uint32_t>& elimclauses, Var v, Clause& c)
+inline static void mkElimClause(vec<uint32_t>& elimclauses, Var v, Clause& c)
 {
     int first = elimclauses.size();
     int v_pos = -1;
@@ -6973,7 +6973,7 @@ static void mkElimClause(vec<uint32_t>& elimclauses, Var v, Clause& c)
 
 
 
-bool SimpSolver::eliminateVar(Var v)
+inline bool SimpSolver::eliminateVar(Var v)
 {
     assert(!frozen[v]);
     assert(!isEliminated(v));
@@ -7035,7 +7035,7 @@ bool SimpSolver::eliminateVar(Var v)
 }
 
 
-bool SimpSolver::substitute(Var v, Lit x)
+inline bool SimpSolver::substitute(Var v, Lit x)
 {
     assert(!frozen[v]);
     assert(!isEliminated(v));
@@ -7069,7 +7069,7 @@ bool SimpSolver::substitute(Var v, Lit x)
 }
 
 
-void SimpSolver::extendModel()
+inline void SimpSolver::extendModel()
 {
     int i, j;
     Lit x;
@@ -7087,8 +7087,7 @@ void SimpSolver::extendModel()
     }
 }
 
-
-bool SimpSolver::eliminate(bool turn_off_elim)
+inline bool SimpSolver::eliminate(bool turn_off_elim)
 {
     if (!simplify()) {
         ok = false;
@@ -7185,7 +7184,7 @@ bool SimpSolver::eliminate(bool turn_off_elim)
 }
 
 
-void SimpSolver::cleanUpClauses()
+inline void SimpSolver::cleanUpClauses()
 {
     occurs.cleanAll();
     int i,j;
@@ -7200,7 +7199,7 @@ void SimpSolver::cleanUpClauses()
 // Garbage Collection methods:
 
 
-void SimpSolver::relocAll(ClauseAllocator& to)
+inline void SimpSolver::relocAll(ClauseAllocator& to)
 {
     if (!use_simplification) return;
 
@@ -7223,7 +7222,7 @@ void SimpSolver::relocAll(ClauseAllocator& to)
 }
 
 
-void SimpSolver::garbageCollect()
+inline void SimpSolver::garbageCollect()
 {
     // Initialize the next region to a size corresponding to the estimated utilization degree. This
     // is not precise but should avoid some unnecessary reallocations for the new region:
@@ -7322,7 +7321,7 @@ extern IntOption  opt_fifoSizeByCore;
 // index + 1 : nbSeen
 // index + 2 : threadId
 // index + 3 : .. index + 3 + size : Lit of clause
-ClausesBuffer::ClausesBuffer(int _nbThreads, unsigned int _maxsize) : first(0), last(_maxsize-1),  
+inline ClausesBuffer::ClausesBuffer(int _nbThreads, unsigned int _maxsize) : first(0), last(_maxsize-1),  
     maxsize(_maxsize), queuesize(0), 
     removedClauses(0),
     forcedRemovedClauses(0), nbThreads(_nbThreads), 
@@ -7332,10 +7331,10 @@ ClausesBuffer::ClausesBuffer(int _nbThreads, unsigned int _maxsize) : first(0), 
 	elems.growTo(maxsize);
 } 
 
-ClausesBuffer::ClausesBuffer() : first(0), last(0), maxsize(0), queuesize(0), removedClauses(0), forcedRemovedClauses(0), nbThreads(0),
+inline ClausesBuffer::ClausesBuffer() : first(0), last(0), maxsize(0), queuesize(0), removedClauses(0), forcedRemovedClauses(0), nbThreads(0),
                                  whenFullRemoveOlder(opt_whenFullRemoveOlder), fifoSizeByCore(opt_fifoSizeByCore) {}
 
-void ClausesBuffer::setNbThreads(int _nbThreads) {
+inline void ClausesBuffer::setNbThreads(int _nbThreads) {
     unsigned int _maxsize = fifoSizeByCore*_nbThreads;
     last = _maxsize -1;
     maxsize = _maxsize;
@@ -7345,9 +7344,10 @@ void ClausesBuffer::setNbThreads(int _nbThreads) {
     elems.growTo(maxsize);
 }
 
-uint32_t ClausesBuffer::getCap() {
+inline uint32_t ClausesBuffer::getCap() {
     return elems.capacity();
 }
+
 inline unsigned int ClausesBuffer::nextIndex(unsigned int i) {
     i++;
     if (i == maxsize)
@@ -7362,7 +7362,7 @@ inline unsigned int ClausesBuffer::addIndex(unsigned int i, unsigned int a) {
     return i;
 }
 
-void ClausesBuffer::removeLastClause() {
+inline void ClausesBuffer::removeLastClause() {
     assert(queuesize > 0);
     do {
 	unsigned int size = (unsigned int) elems[nextIndex(last)];
@@ -7404,7 +7404,7 @@ inline uint32_t ClausesBuffer::noCheckPop(uint32_t & index) {
 
 
 // Return true if the clause was succesfully added
-bool ClausesBuffer::pushClause(int threadId, Clause & c) {
+inline bool ClausesBuffer::pushClause(int threadId, Clause & c) {
     if (!whenFullRemoveOlder && (queuesize + c.size() + headerSize >= maxsize))
 	return false; // We need to remove some old clauses
     while (queuesize + c.size() + headerSize >= maxsize) { // We need to remove some old clauses
@@ -7422,7 +7422,7 @@ bool ClausesBuffer::pushClause(int threadId, Clause & c) {
     //  printf(" -> (%d, %d)\n", first, last);
 }
 
-bool ClausesBuffer::getClause(int threadId, int & threadOrigin, vec<Lit> & resultClause,  bool firstFound) {
+inline bool ClausesBuffer::getClause(int threadId, int & threadOrigin, vec<Lit> & resultClause,  bool firstFound) {
     assert(lastOfThread.size() > threadId);
     unsigned int thislast = lastOfThread[threadId];
     assert(!firstFound || thislast == last); // FIXME: Gilles has this assertion on his cluster
@@ -7532,7 +7532,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 namespace Glucose {
 
 
-void SolverConfiguration::configure(MultiSolvers *ms, int nbsolvers) {
+inline void SolverConfiguration::configure(MultiSolvers *ms, int nbsolvers) {
     for(int i = 1;i<nbsolvers;i++) { // Configuration for the sat race 2015
         ms->solvers[i]->randomizeFirstDescent = true;
         ms->solvers[i]->adaptStrategies = (i%2==0); // Just half of the cores are in adaptive mode
@@ -7548,7 +7548,7 @@ void SolverConfiguration::configure(MultiSolvers *ms, int nbsolvers) {
 }
 
         
-void SolverConfiguration::configureSAT15Adapt(MultiSolvers *ms, int nbsolvers) {
+inline void SolverConfiguration::configureSAT15Adapt(MultiSolvers *ms, int nbsolvers) {
     for(int i = 1;i<nbsolvers;i++) { // Configuration for the sat race 2015
         ms->solvers[i]->randomizeFirstDescent = true;
         ms->solvers[i]->adaptStrategies = (i%2==0); // Just half of the cores are in adaptive mode
@@ -7562,7 +7562,7 @@ void SolverConfiguration::configureSAT15Adapt(MultiSolvers *ms, int nbsolvers) {
 }
 
 
-void SolverConfiguration::configureSAT15Default(MultiSolvers *ms, int nbsolvers) {
+inline void SolverConfiguration::configureSAT15Default(MultiSolvers *ms, int nbsolvers) {
     for(int i = 1;i<nbsolvers;i++) 
 	ms->solvers[i]->randomizeFirstDescent = true;
 
@@ -7576,7 +7576,7 @@ void SolverConfiguration::configureSAT15Default(MultiSolvers *ms, int nbsolvers)
 
 }
 
-void SolverConfiguration::configureSAT14(MultiSolvers *ms, int nbsolvers) {
+inline void SolverConfiguration::configureSAT14(MultiSolvers *ms, int nbsolvers) {
     
    if (nbsolvers < 2 ) return;
 
@@ -7720,7 +7720,7 @@ extern BoolOption opt_plingeling; // (_cunstable, "plingeling",    "plingeling s
 //=====================================================================
 
 
-ParallelSolver::ParallelSolver(int threadId) :
+inline ParallelSolver::ParallelSolver(int threadId) :
   SimpSolver()
 , thn(threadId) // The thread number of this solver
 , goodlimitlbd(7)
@@ -7743,12 +7743,12 @@ ParallelSolver::ParallelSolver(int threadId) :
 
 
 
-ParallelSolver::~ParallelSolver() {
+inline ParallelSolver::~ParallelSolver() {
     printf("c Solver of thread %d ended.\n", thn);
     fflush(stdout);
 }
 
-ParallelSolver::ParallelSolver(const ParallelSolver &s) : 
+inline ParallelSolver::ParallelSolver(const ParallelSolver &s) : 
     SimpSolver(s)
     , sharedcomp(s.sharedcomp)
 , goodlimitlbd(s.goodlimitlbd)
@@ -7802,7 +7802,7 @@ struct reduceDB_oneWatched_lt {
 };
 
 // @overide
-void ParallelSolver::reduceDB() {
+inline void ParallelSolver::reduceDB() {
 
     int i, j;
     stats[nbReduceDB]++;
@@ -7892,7 +7892,7 @@ void ParallelSolver::reduceDB() {
 |________________________________________________________________________________________________@*/
 
 
-void ParallelSolver::parallelImportClauseDuringConflictAnalysis(Clause &c,CRef confl) {
+inline void ParallelSolver::parallelImportClauseDuringConflictAnalysis(Clause &c,CRef confl) {
     if (dontExportDirectReusedClauses && (confl == lastLearntClause) && (c.getExported() < nbTimesSeenBeforeExport)) { // Experimental stuff
         c.setExported(nbTimesSeenBeforeExport);
         nbNotExportedBecauseDirectlyReused++;
@@ -7910,13 +7910,13 @@ void ParallelSolver::parallelImportClauseDuringConflictAnalysis(Clause &c,CRef c
 
 
 // These Two functions are useless here !!
-void ParallelSolver::reportProgress() {
+inline void ParallelSolver::reportProgress() {
     printf("c | %2d | %6d | %10d | %10d | %8d | %8d | %8d | %8d | %8d | %6.3f |\n",(int)thn,(int)starts,(int)decisions,(int)conflicts,(int)stats[originalClausesSeen],(int)learnts.size(),(int)stats[nbexported],(int)stats[nbimported],(int)stats[nbPromoted],progressEstimate()*100);
 
     //printf("c thread=%d confl=%lld starts=%llu reduceDB=%llu learnts=%d broadcast=%llu  blockedReuse=%lld imported=%llu promoted=%llu limitlbd=%llu limitsize=%llu\n", thn, conflicts, starts, nbReduceDB, learnts.size(), nbexported, nbNotExportedBecauseDirectlyReused, nbimported, nbPromoted, goodlimitlbd, goodlimitsize);
 }
 
-void ParallelSolver::reportProgressArrayImports(vec<unsigned int> &totalColumns) {
+inline void ParallelSolver::reportProgressArrayImports(vec<unsigned int> &totalColumns) {
     return ; // TODO : does not currently work
     unsigned int totalImports = 0;
     printf("c %3d | ", thn);
@@ -7941,7 +7941,7 @@ void ParallelSolver::reportProgressArrayImports(vec<unsigned int> &totalColumns)
 |  Output: true if the clause is indeed sent
 |________________________________________________________________________________________________@*/
 
-bool ParallelSolver::shareClause(Clause & c) {
+inline bool ParallelSolver::shareClause(Clause & c) {
     bool sent = sharedcomp->addLearnt(this, c);
     if (sent)
         stats[nbexported]++;
@@ -7956,7 +7956,7 @@ bool ParallelSolver::shareClause(Clause & c) {
 |  is panic mode (save memory) is enabled ?
 |________________________________________________________________________________________________@*/
 
-bool ParallelSolver::panicModeIsEnabled() {
+inline bool ParallelSolver::panicModeIsEnabled() {
     return sharedcomp->panicMode;
 }
 
@@ -7968,7 +7968,7 @@ bool ParallelSolver::panicModeIsEnabled() {
 |  import all unary clauses from other cores
 |________________________________________________________________________________________________@*/
 
-void ParallelSolver::parallelImportUnaryClauses() {
+inline void ParallelSolver::parallelImportUnaryClauses() {
     Lit l;
     while ((l = sharedcomp->getUnary(this)) != lit_Undef) {
         if (value(var(l)) == l_Undef) {
@@ -7987,7 +7987,7 @@ void ParallelSolver::parallelImportUnaryClauses() {
 |  Output : if there is a final conflict
 |________________________________________________________________________________________________@*/
 
-bool ParallelSolver::parallelImportClauses() {
+inline bool ParallelSolver::parallelImportClauses() {
 
     assert(decisionLevel() == 0);
     int importedFromThread;
@@ -8043,7 +8043,7 @@ bool ParallelSolver::parallelImportClauses() {
 |  export unary clauses to other cores
 |________________________________________________________________________________________________@*/
 
-void ParallelSolver::parallelExportUnaryClause(Lit p) {
+inline void ParallelSolver::parallelExportUnaryClause(Lit p) {
     // Multithread
     sharedcomp->addLearnt(this,p ); // TODO: there can be a contradiction here (two theads proving a and -a)
     stats[nbexportedunit]++;
@@ -8060,7 +8060,7 @@ void ParallelSolver::parallelExportUnaryClause(Lit p) {
 |  
 |________________________________________________________________________________________________@*/
 
-void ParallelSolver::parallelExportClauseDuringSearch(Clause &c) {
+inline void ParallelSolver::parallelExportClauseDuringSearch(Clause &c) {
     //
     // Multithread
     // Now I'm sharing the clause if seen in at least two conflicts analysis shareClause(ca[cr]);
@@ -8082,13 +8082,13 @@ void ParallelSolver::parallelExportClauseDuringSearch(Clause &c) {
 |  
 |________________________________________________________________________________________________@*/
 
-bool ParallelSolver::parallelJobIsFinished() { 
+inline bool ParallelSolver::parallelJobIsFinished() { 
     // Parallel: another job has finished let's quit
     return (sharedcomp->jobFinished());
 }
 
 // @overide
-lbool ParallelSolver::solve_(bool do_simp, bool turn_off_simp) {
+inline lbool ParallelSolver::solve_(bool do_simp, bool turn_off_simp) {
   vec<Var> extra_frozen;
     lbool    result = l_True;
     do_simp &= use_simplification;
@@ -8222,19 +8222,19 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 
 namespace Glucose {
 
-SolverCompanion::SolverCompanion()
+inline SolverCompanion::SolverCompanion()
 {}
 
-SolverCompanion::~SolverCompanion()
+inline SolverCompanion::~SolverCompanion()
 {}
 
 
-bool SolverCompanion::addSolver(ParallelSolver* s) {
+inline bool SolverCompanion::addSolver(ParallelSolver* s) {
 	watchedSolvers.push(s);
 	return true;
 }
 
-int SolverCompanion::runOnceCompanion() {
+inline int SolverCompanion::runOnceCompanion() {
 	int errcode = 0;
 	for(int indexSolver = 0; indexSolver<watchedSolvers.size();indexSolver++) {
 	  errcode=runOnceCompanion(watchedSolvers[indexSolver]);
@@ -8243,7 +8243,7 @@ int SolverCompanion::runOnceCompanion() {
 	return errcode;
 }
 
-int SolverCompanion::runOnceCompanion(ParallelSolver*s) {
+inline int SolverCompanion::runOnceCompanion(ParallelSolver*s) {
 	return 0;
 }
 
@@ -8307,7 +8307,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 
 namespace Glucose {
 
-SharedCompanion::SharedCompanion(int _nbThreads) :
+inline SharedCompanion::SharedCompanion(int _nbThreads) :
     nbThreads(_nbThreads), 
     bjobFinished(false),
     jobFinishedBy(NULL),
@@ -8326,16 +8326,16 @@ SharedCompanion::SharedCompanion(int _nbThreads) :
 
 }
 
-void SharedCompanion::setNbThreads(int _nbThreads) {
+inline void SharedCompanion::setNbThreads(int _nbThreads) {
    nbThreads = _nbThreads;
    clausesBuffer.setNbThreads(_nbThreads); 
 }
 
-void SharedCompanion::printStats() {
+inline void SharedCompanion::printStats() {
 }
 
 // No multithread safe
-bool SharedCompanion::addSolver(ParallelSolver* s) {
+inline bool SharedCompanion::addSolver(ParallelSolver* s) {
 	watchedSolvers.push(s);
 	pthread_mutex_t* mu = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t));
 	pthread_mutex_init(mu,NULL);
@@ -8344,11 +8344,12 @@ bool SharedCompanion::addSolver(ParallelSolver* s) {
 
 	return true;
 }
-void SharedCompanion::newVar(bool sign) {
+
+inline void SharedCompanion::newVar(bool sign) {
    isUnary .push(l_Undef);
 }
 
-void SharedCompanion::addLearnt(ParallelSolver *s,Lit unary) {
+inline void SharedCompanion::addLearnt(ParallelSolver *s,Lit unary) {
   pthread_mutex_lock(&mutexSharedUnitCompanion);
   if (isUnary[var(unary)]==l_Undef) {
       unitLit.push(unary);
@@ -8357,7 +8358,7 @@ void SharedCompanion::addLearnt(ParallelSolver *s,Lit unary) {
   pthread_mutex_unlock(&mutexSharedUnitCompanion);
 }
 
-Lit SharedCompanion::getUnary(ParallelSolver *s) {
+inline Lit SharedCompanion::getUnary(ParallelSolver *s) {
   int sn = s->thn;
   Lit ret = lit_Undef;
 
@@ -8371,7 +8372,7 @@ Lit SharedCompanion::getUnary(ParallelSolver *s) {
 // Specialized functions for this companion
 // must be multithread safe
 // Add a clause to the threads-wide clause database (all clauses, through)
-bool SharedCompanion::addLearnt(ParallelSolver *s, Clause & c) { 
+inline bool SharedCompanion::addLearnt(ParallelSolver *s, Clause & c) { 
   int sn = s->thn; // thread number of the solver
   bool ret = false;
   assert(watchedSolvers.size()>sn);
@@ -8383,7 +8384,7 @@ bool SharedCompanion::addLearnt(ParallelSolver *s, Clause & c) {
 }
 
 
-bool SharedCompanion::getNewClause(ParallelSolver *s, int & threadOrigin, vec<Lit>& newclause) { // gets a new interesting clause for solver s 
+inline bool SharedCompanion::getNewClause(ParallelSolver *s, int & threadOrigin, vec<Lit>& newclause) { // gets a new interesting clause for solver s 
   int sn = s->thn;
   
     // First, let's get the clauses on the big blackboard
@@ -8394,7 +8395,7 @@ bool SharedCompanion::getNewClause(ParallelSolver *s, int & threadOrigin, vec<Li
   return b;
 }
 
-bool SharedCompanion::jobFinished() {
+inline bool SharedCompanion::jobFinished() {
     bool ret = false;
     pthread_mutex_lock(&mutexJobFinished);
     ret = bjobFinished;
@@ -8402,7 +8403,7 @@ bool SharedCompanion::jobFinished() {
     return ret;
 }
 
-bool SharedCompanion::IFinished(ParallelSolver *s) {
+inline bool SharedCompanion::IFinished(ParallelSolver *s) {
     bool ret = false;
     pthread_mutex_lock(&mutexJobFinished);
     if (!bjobFinished) {
@@ -8500,13 +8501,13 @@ static inline double cpuTime_MultiSolver(void) {
 }
 
 
-void MultiSolvers::informEnd(lbool res) {
+inline void MultiSolvers::informEnd(lbool res) {
     result = res;
     pthread_cond_broadcast(&cfinished);
 }
 
 
-MultiSolvers::MultiSolvers(ParallelSolver *s) :
+inline MultiSolvers::MultiSolvers(ParallelSolver *s) :
         use_simplification(false), ok(true), maxnbthreads(4), nbthreads(opt_nbsolversmultithreads), nbsolvers(opt_nbsolversmultithreads), nbcompanions(4), nbcompbysolver(2),
         allClonesAreBuilt(0), showModel(false), winner(-1), var_decay(1 / 0.95), clause_decay(1 / 0.999), cla_inc(1), var_inc(1), random_var_freq(0.02), restart_first(100),
         restart_inc(1.5), learntsize_factor((double) 1 / (double) 3), learntsize_inc(1.1), expensive_ccmin(true), polarity_mode(polarity_false), maxmemory(opt_maxmemory),
@@ -8534,7 +8535,7 @@ MultiSolvers::MultiSolvers(ParallelSolver *s) :
         fprintf(stdout, "c %d solvers engines and 1 companion as a blackboard created.\n", nbsolvers);
 }
 
-MultiSolvers::MultiSolvers(int nr_threads) :
+inline MultiSolvers::MultiSolvers(int nr_threads) :
         use_simplification(false), ok(true), maxnbthreads(4), nbthreads(nr_threads), nbsolvers(nr_threads), nbcompanions(4), nbcompbysolver(2),
         allClonesAreBuilt(0), showModel(false), winner(-1), var_decay(1 / 0.95), clause_decay(1 / 0.999), cla_inc(1), var_inc(1), random_var_freq(0.02), restart_first(100),
         restart_inc(1.5), learntsize_factor((double) 1 / (double) 3), learntsize_inc(1.1), expensive_ccmin(true), polarity_mode(polarity_false), maxmemory(opt_maxmemory),
@@ -8561,17 +8562,17 @@ MultiSolvers::MultiSolvers(int nr_threads) :
 
 }
 
-MultiSolvers::MultiSolvers() : MultiSolvers(new ParallelSolver(-1)) {
+inline MultiSolvers::MultiSolvers() : MultiSolvers(new ParallelSolver(-1)) {
 }
 
-MultiSolvers::~MultiSolvers() { }
+inline MultiSolvers::~MultiSolvers() { }
 
 
 /**
  * Generate All solvers
  */
 
-void MultiSolvers::generateAllSolvers() {
+inline void MultiSolvers::generateAllSolvers() {
     assert(solvers[0] != NULL);
     assert(allClonesAreBuilt == 0);
 
@@ -8596,12 +8597,12 @@ void MultiSolvers::generateAllSolvers() {
  */
 
 
-ParallelSolver *MultiSolvers::retrieveSolver(int i) {
+inline ParallelSolver *MultiSolvers::retrieveSolver(int i) {
     return new ParallelSolver(i);
 }
 
 
-Var MultiSolvers::newVar(bool sign, bool dvar) {
+inline Var MultiSolvers::newVar(bool sign, bool dvar) {
     assert(solvers[0] != NULL);
     numvar++;
     int v;
@@ -8618,7 +8619,7 @@ Var MultiSolvers::newVar(bool sign, bool dvar) {
 }
 
 
-bool MultiSolvers::addClause_(vec<Lit> &ps) {
+inline bool MultiSolvers::addClause_(vec<Lit> &ps) {
     assert(solvers[0] != NULL); // There is at least one solver.
     // Check if clause is satisfied and remove false/duplicate literals:
     if(!okay()) return false;
@@ -8668,7 +8669,7 @@ bool MultiSolvers::addClause_(vec<Lit> &ps) {
 }
 
 
-bool MultiSolvers::simplify() {
+inline bool MultiSolvers::simplify() {
     assert(solvers[0] != NULL); // There is at least one solver.
 
     if(!okay()) return false;
@@ -8676,7 +8677,7 @@ bool MultiSolvers::simplify() {
 }
 
 
-bool MultiSolvers::eliminate() {
+inline bool MultiSolvers::eliminate() {
 
     // TODO allow variable elimination when all threads are built!
     assert(allClonesAreBuilt == false);
@@ -8690,7 +8691,7 @@ bool MultiSolvers::eliminate() {
 
 
 // TODO: Use a template here
-void *localLaunch(void *arg) {
+inline void *localLaunch(void *arg) {
     ParallelSolver *s = (ParallelSolver *) arg;
 
     (void) s->solve();
@@ -8702,7 +8703,7 @@ void *localLaunch(void *arg) {
 #define MAXIMUM_SLEEP_DURATION 5
 
 
-void MultiSolvers::printStats() {
+inline void MultiSolvers::printStats() {
     static int nbprinted = 1;
     double cpu_time = cpuTime_MultiSolver();
     printf("c\n");
@@ -8733,7 +8734,7 @@ void MultiSolvers::printStats() {
 
 
 // Still a ugly function... To be rewritten with some statistics class some day
-void MultiSolvers::printFinalStats() {
+inline void MultiSolvers::printFinalStats() {
     sharedcomp->printStats();
     printf("c\nc\n");
     printf("c\n");
@@ -9016,12 +9017,12 @@ void MultiSolvers::printFinalStats() {
 
 
 // Well, all those parameteres are just naive guesses... No experimental evidences for this.
-void MultiSolvers::adjustParameters() {
+inline void MultiSolvers::adjustParameters() {
     SolverConfiguration::configure(this, nbsolvers);
 }
 
 
-void MultiSolvers::adjustNumberOfCores() {
+inline void MultiSolvers::adjustNumberOfCores() {
     float mem = memUsed();
     if(nbthreads == 0) { // Automatic configuration
         if(verb >= 1)
@@ -9039,7 +9040,7 @@ void MultiSolvers::adjustNumberOfCores() {
 }
 
 
-lbool MultiSolvers::solve() {
+inline lbool MultiSolvers::solve() {
     pthread_attr_t thAttr;
     int i;
 
