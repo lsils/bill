@@ -3,7 +3,15 @@
 | See accompanying file /LICENSE for details.
 *------------------------------------------------------------------------------------------------*/
 #include <bill/sat/solver.hpp>
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4710)
+#pragma warning(disable:4711)
 #include <catch.hpp>
+#pragma warning(pop)
+#endif
+
 #include <iostream>
 #include <vector>
 

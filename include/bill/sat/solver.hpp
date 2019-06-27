@@ -24,6 +24,7 @@
 #pragma warning(disable:4571)
 #pragma warning(disable:4625)
 #pragma warning(disable:4626)
+#pragma warning(disable:4710)
 #pragma warning(disable:4820)
 #include "sat_solvers/ghack.hpp"
 #include "sat_solvers/glucose.hpp"
