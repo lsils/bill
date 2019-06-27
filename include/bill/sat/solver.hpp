@@ -37,6 +37,7 @@ public:
 		unsatisfiable,
 		undefined,
 		timeout,
+		dirty,
 	};
 
 	result(states state = states::undefined)
@@ -126,16 +127,67 @@ public:
 		for (auto lit : clause) {
 			literals.push(Glucose::mkLit(lit.variable(), lit.is_complemented()));
 		}
-		return solver_->addClause_(literals);
+		auto const result = solver_->addClause_(literals);
+		state_ = result ? result::states::dirty : result::states::unsatisfiable;
+		return result;
 	}
 
 	auto add_clause(lit_type lit)
 	{
-		return solver_->addClause(Glucose::mkLit(lit.variable(), lit.is_complemented()));
+		auto const result = solver_->addClause(
+		    Glucose::mkLit(lit.variable(), lit.is_complemented()));
+		state_ = result ? result::states::dirty : result::states::unsatisfiable;
+		return result;
 	}
 
-	result solve(std::vector<lit_type> const& assumptions = {}, uint32_t conflict_limit = 0)
+	result get_model() const
 	{
+		assert(state_ == result::states::satisfiable);
+		result::model_type model;
+		for (auto i = 0; i < solver_->model.size(); ++i) {
+			if (solver_->model[i] == Glucose::l_False) {
+				model.emplace_back(lbool_type::false_);
+			} else if (solver_->model[i] == Glucose::l_True) {
+				model.emplace_back(lbool_type::true_);
+			} else {
+				model.emplace_back(lbool_type::undefined);
+			}
+		}
+		return result(model);
+	}
+
+	result get_core() const
+	{
+		assert(state_ == result::states::unsatisfiable);
+		result::clause_type unsat_core;
+		for (auto i = 0; i < solver_->conflict.size(); ++i) {
+			unsat_core.emplace_back(Glucose::var(solver_->conflict[i]),
+			                        Glucose::sign(solver_->conflict[i]) ?
+			                            negative_polarity :
+			                            positive_polarity);
+		}
+		return result(unsat_core);
+	}
+
+	result get_result() const
+	{
+		assert(state_ != result::states::dirty);
+		if (state_ == result::states::satisfiable) {
+			return get_model();
+		} else if (state_ == result::states::unsatisfiable) {
+			return get_core();
+		} else {
+			return result();
+		}
+	}
+
+	result::states solve(std::vector<lit_type> const& assumptions = {},
+	                     uint32_t conflict_limit = 0)
+	{
+		if (state_ != result::states::dirty) {
+			return state_;
+		}
+
 		assert(solver_->okay() == true);
 		if (conflict_limit) {
 			solver_->setConfBudget(conflict_limit);
@@ -148,28 +200,13 @@ public:
 
 		Glucose::lbool state = solver_->solveLimited(literals);
 		if (state == Glucose::l_True) {
-			result::model_type model;
-			for (auto i = 0; i < solver_->model.size(); ++i) {
-				if (solver_->model[i] == Glucose::l_False) {
-					model.emplace_back(lbool_type::false_);
-				} else if (solver_->model[i] == Glucose::l_True) {
-					model.emplace_back(lbool_type::true_);
-				} else {
-					model.emplace_back(lbool_type::undefined);
-				}
-			}
-			return result(model);
+			state_ = result::states::satisfiable;
 		} else if (state == Glucose::l_False) {
-			result::clause_type unsat_core;
-			for (auto i = 0; i < solver_->conflict.size(); ++i) {
-				unsat_core.emplace_back(Glucose::var(solver_->conflict[i]),
-				                        Glucose::sign(solver_->conflict[i]) ?
-				                            negative_polarity :
-				                            positive_polarity);
-			}
-			return result(unsat_core);
+			state_ = result::states::unsatisfiable;
+		} else {
+			state_ = result::states::undefined;
 		}
-		return result();
+		return state_;
 	}
 #pragma endregion
 
@@ -186,7 +223,11 @@ public:
 #pragma endregion
 
 private:
+	/*! \brief Backend solver */
 	std::unique_ptr<solver_type> solver_;
+
+	/*! \brief Current state of the solver */
+	result::states state_ = result::states::undefined;
 };
 
 template<>
@@ -219,16 +260,67 @@ public:
 		for (auto lit : clause) {
 			literals.push(GHack::mkLit(lit.variable(), lit.is_complemented()));
 		}
-		return solver_->addClause_(literals);
+		auto const result = solver_->addClause_(literals);
+		state_ = result ? result::states::dirty : result::states::unsatisfiable;
+		return result;
 	}
 
 	auto add_clause(lit_type lit)
 	{
-		return solver_->addClause(GHack::mkLit(lit.variable(), lit.is_complemented()));
+		auto const result = solver_->addClause(
+		    GHack::mkLit(lit.variable(), lit.is_complemented()));
+		state_ = result ? result::states::dirty : result::states::unsatisfiable;
+		return result;
 	}
 
-	result solve(std::vector<lit_type> const& assumptions = {}, uint32_t conflict_limit = 0)
+	result get_model() const
 	{
+		assert(state_ == result::states::satisfiable);
+		result::model_type model;
+		for (auto i = 0; i < solver_->model.size(); ++i) {
+			if (solver_->model[i] == GHack::l_False) {
+				model.emplace_back(lbool_type::false_);
+			} else if (solver_->model[i] == GHack::l_True) {
+				model.emplace_back(lbool_type::true_);
+			} else {
+				model.emplace_back(lbool_type::undefined);
+			}
+		}
+		return result(model);
+	}
+
+	result get_core() const
+	{
+		assert(state_ == result::states::unsatisfiable);
+		result::clause_type unsat_core;
+		for (auto i = 0; i < solver_->conflict.size(); ++i) {
+			unsat_core.emplace_back(GHack::var(solver_->conflict[i]),
+			                        GHack::sign(solver_->conflict[i]) ?
+			                            negative_polarity :
+			                            positive_polarity);
+		}
+		return result(unsat_core);
+	}
+
+	result get_result() const
+	{
+		assert(state_ != result::states::dirty);
+		if (state_ == result::states::satisfiable) {
+			return get_model();
+		} else if (state_ == result::states::unsatisfiable) {
+			return get_core();
+		} else {
+			return result();
+		}
+	}
+
+	result::states solve(std::vector<lit_type> const& assumptions = {},
+	                     uint32_t conflict_limit = 0)
+	{
+		if (state_ != result::states::dirty) {
+			return state_;
+		}
+
 		assert(solver_->okay() == true);
 		if (conflict_limit) {
 			solver_->setConfBudget(conflict_limit);
@@ -241,28 +333,13 @@ public:
 
 		GHack::lbool state = solver_->solveLimited(literals);
 		if (state == GHack::l_True) {
-			result::model_type model;
-			for (auto i = 0; i < solver_->model.size(); ++i) {
-				if (solver_->model[i] == GHack::l_False) {
-					model.emplace_back(lbool_type::false_);
-				} else if (solver_->model[i] == GHack::l_True) {
-					model.emplace_back(lbool_type::true_);
-				} else {
-					model.emplace_back(lbool_type::undefined);
-				}
-			}
-			return result(model);
+			state_ = result::states::satisfiable;
 		} else if (state == GHack::l_False) {
-			result::clause_type unsat_core;
-			for (auto i = 0; i < solver_->conflict.size(); ++i) {
-				unsat_core.emplace_back(GHack::var(solver_->conflict[i]),
-				                        GHack::sign(solver_->conflict[i]) ?
-				                            negative_polarity :
-				                            positive_polarity);
-			}
-			return result(unsat_core);
+			state_ = result::states::unsatisfiable;
+		} else {
+			state_ = result::states::undefined;
 		}
-		return result();
+		return state_;
 	}
 #pragma endregion
 
@@ -279,7 +356,11 @@ public:
 #pragma endregion
 
 private:
+	/*! \brief Backend solver */
 	std::unique_ptr<solver_type> solver_;
+
+	/*! \brief Current state of the solver */
+	result::states state_ = result::states::undefined;
 };
 
 template<>
@@ -312,16 +393,67 @@ public:
 		for (auto lit : clause) {
 			literals.push(Maple::mkLit(lit.variable(), lit.is_complemented()));
 		}
-		return solver_->addClause_(literals);
+		auto const result = solver_->addClause_(literals);
+		state_ = result ? result::states::dirty : result::states::unsatisfiable;
+		return result;
 	}
 
 	auto add_clause(lit_type lit)
 	{
-		return solver_->addClause(Maple::mkLit(lit.variable(), lit.is_complemented()));
+		auto const result = solver_->addClause(
+		    Maple::mkLit(lit.variable(), lit.is_complemented()));
+		state_ = result ? result::states::dirty : result::states::unsatisfiable;
+		return result;
 	}
 
-	result solve(std::vector<lit_type> const& assumptions = {}, uint32_t conflict_limit = 0)
+	result get_model() const
 	{
+		assert(state_ == result::states::satisfiable);
+		result::model_type model;
+		for (auto i = 0; i < solver_->model.size(); ++i) {
+			if (solver_->model[i] == Maple::l_False) {
+				model.emplace_back(lbool_type::false_);
+			} else if (solver_->model[i] == Maple::l_True) {
+				model.emplace_back(lbool_type::true_);
+			} else {
+				model.emplace_back(lbool_type::undefined);
+			}
+		}
+		return result(model);
+	}
+
+	result get_core() const
+	{
+		assert(state_ == result::states::unsatisfiable);
+		result::clause_type unsat_core;
+		for (auto i = 0; i < solver_->conflict.size(); ++i) {
+			unsat_core.emplace_back(Maple::var(solver_->conflict[i]),
+			                        Maple::sign(solver_->conflict[i]) ?
+			                            negative_polarity :
+			                            positive_polarity);
+		}
+		return result(unsat_core);
+	}
+
+	result get_result() const
+	{
+		assert(state_ != result::states::dirty);
+		if (state_ == result::states::satisfiable) {
+			return get_model();
+		} else if (state_ == result::states::unsatisfiable) {
+			return get_core();
+		} else {
+			return result();
+		}
+	}
+
+	result::states solve(std::vector<lit_type> const& assumptions = {},
+	                     uint32_t conflict_limit = 0)
+	{
+		if (state_ != result::states::dirty) {
+			return state_;
+		}
+
 		assert(solver_->okay() == true);
 		if (conflict_limit) {
 			solver_->setConfBudget(conflict_limit);
@@ -334,28 +466,13 @@ public:
 
 		Maple::lbool state = solver_->solveLimited(literals);
 		if (state == Maple::l_True) {
-			result::model_type model;
-			for (auto i = 0; i < solver_->model.size(); ++i) {
-				if (solver_->model[i] == Maple::l_False) {
-					model.emplace_back(lbool_type::false_);
-				} else if (solver_->model[i] == Maple::l_True) {
-					model.emplace_back(lbool_type::true_);
-				} else {
-					model.emplace_back(lbool_type::undefined);
-				}
-			}
-			return result(model);
+			state_ = result::states::satisfiable;
 		} else if (state == Maple::l_False) {
-			result::clause_type unsat_core;
-			for (auto i = 0; i < solver_->conflict.size(); ++i) {
-				unsat_core.emplace_back(Maple::var(solver_->conflict[i]),
-				                        Maple::sign(solver_->conflict[i]) ?
-				                            negative_polarity :
-				                            positive_polarity);
-			}
-			return result(unsat_core);
+			state_ = result::states::unsatisfiable;
+		} else {
+			state_ = result::states::undefined;
 		}
-		return result();
+		return state_;
 	}
 #pragma endregion
 
@@ -372,7 +489,11 @@ public:
 #pragma endregion
 
 private:
+	/*! \brief Backend solver */
 	std::unique_ptr<solver_type> solver_;
+
+	/*! \brief Current state of the solver */
+	result::states state_ = result::states::dirty;
 };
 
 } // namespace bill

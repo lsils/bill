@@ -2,9 +2,8 @@
 | This file is distributed under the MIT License.
 | See accompanying file /LICENSE for details.
 *------------------------------------------------------------------------------------------------*/
-#include <catch.hpp>
-
 #include <bill/sat/solver.hpp>
+#include <catch.hpp>
 #include <iostream>
 #include <vector>
 
@@ -52,8 +51,8 @@ lit_type add_tseitin_equals(Solver& solver, lit_type const& a, lit_type const& b
 	return lit_type(r, lit_type::polarities::positive);
 }
 
-TEMPLATE_TEST_CASE("De Morgan", "[sat][template]",
-                   solver<solvers::glucose_41>, solver<solvers::ghack>, solver<solvers::maple>)
+TEMPLATE_TEST_CASE("De Morgan", "[sat][template]", solver<solvers::glucose_41>,
+                   solver<solvers::ghack>, solver<solvers::maple>)
 {
 	TestType solver;
 
@@ -66,12 +65,12 @@ TEMPLATE_TEST_CASE("De Morgan", "[sat][template]",
 	solver.add_clause(t2);
 
 	auto const r = solver.solve();
-	CHECK(r.is_unsatisfiable());
-	CHECK(!r.is_satisfiable());
+	CHECK(r == result::states::unsatisfiable);
+	CHECK(r != result::states::satisfiable);
 }
 
-TEMPLATE_TEST_CASE("Incremental", "[sat][template]",
-                   solver<solvers::glucose_41>, solver<solvers::ghack>, solver<solvers::maple>)
+TEMPLATE_TEST_CASE("Incremental", "[sat][template]", solver<solvers::glucose_41>,
+                   solver<solvers::ghack>, solver<solvers::maple>)
 {
 	TestType solver;
 
@@ -80,13 +79,13 @@ TEMPLATE_TEST_CASE("Incremental", "[sat][template]",
 
 	auto const t0 = add_tseitin_and(solver, a, b);
 	auto r = solver.solve();
-	CHECK(r.is_satisfiable());
+	CHECK(r == result::states::satisfiable);
 
 	auto const t1 = ~add_tseitin_or(solver, ~a, ~b);
 	r = solver.solve();
-	CHECK(r.is_satisfiable());
+	CHECK(r == result::states::satisfiable);
 
 	auto const t2 = add_tseitin_xor(solver, t0, t1);
 	r = solver.solve(std::vector({t2}));
-	CHECK(r.is_unsatisfiable());
+	CHECK(r == result::states::unsatisfiable);
 }
