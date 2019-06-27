@@ -3,7 +3,27 @@
 | See accompanying file /LICENSE for details.
 *------------------------------------------------------------------------------------------------*/
 #include <bill/sat/solver.hpp>
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4365)
+#pragma warning(disable:4514)
+#pragma warning(disable:4571)
+#pragma warning(disable:4583)
+#pragma warning(disable:4619)
+#pragma warning(disable:4623)
+#pragma warning(disable:4625)
+#pragma warning(disable:4626)
+#pragma warning(disable:4710)
+#pragma warning(disable:4711)
+#pragma warning(disable:4820)
+#pragma warning(disable:5026)
+#pragma warning(disable:5027)
+#pragma warning(disable:5039)
 #include <catch.hpp>
+#pragma warning(pop)
+#endif
+
 #include <iostream>
 #include <vector>
 
@@ -51,6 +71,27 @@ lit_type add_tseitin_equals(Solver& solver, lit_type const& a, lit_type const& b
 	return lit_type(r, lit_type::polarities::positive);
 }
 
+TEMPLATE_TEST_CASE("Simple SAT", "[sat][template]", solver<solvers::glucose_41>,
+                   solver<solvers::ghack>, solver<solvers::maple>)
+{
+	TestType solver;
+	auto const r = solver.solve();
+	CHECK(r != result::states::unsatisfiable);
+}
+
+TEMPLATE_TEST_CASE("Simple UNSAT", "[sat][template]", solver<solvers::glucose_41>,
+                   solver<solvers::ghack>, solver<solvers::maple>)
+{
+	TestType solver;
+
+	auto const a = lit_type(solver.add_variable(), lit_type::polarities::positive);
+	solver.add_clause(a);
+	solver.add_clause(~a);
+
+	auto const r = solver.solve();
+	CHECK(r == result::states::unsatisfiable);
+}
+
 TEMPLATE_TEST_CASE("De Morgan", "[sat][template]", solver<solvers::glucose_41>,
                    solver<solvers::ghack>, solver<solvers::maple>)
 {
@@ -86,7 +127,8 @@ TEMPLATE_TEST_CASE("Incremental", "[sat][template]", solver<solvers::glucose_41>
 	CHECK(r == result::states::satisfiable);
 
 	auto const t2 = add_tseitin_xor(solver, t0, t1);
-	r = solver.solve(std::vector({t2}));
+	solver.add_clause(t2);
+	r = solver.solve();
 	CHECK(r == result::states::unsatisfiable);
 }
 

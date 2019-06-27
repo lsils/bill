@@ -4,6 +4,7 @@
 *------------------------------------------------------------------------------------------------*/
 #pragma once
 
+#if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdangling-else"
 #pragma GCC diagnostic ignored "-Wreorder"
@@ -18,6 +19,19 @@
 #include "sat_solvers/glucose.hpp"
 #include "sat_solvers/maple.hpp"
 #pragma GCC diagnostic pop
+#else
+#pragma warning(push)
+#pragma warning(disable:4571)
+#pragma warning(disable:4625)
+#pragma warning(disable:4626)
+#pragma warning(disable:4710)
+#pragma warning(disable:4774)
+#pragma warning(disable:4820)
+#include "sat_solvers/ghack.hpp"
+#include "sat_solvers/glucose.hpp"
+#include "sat_solvers/maple.hpp"
+#pragma warning(pop)
+#endif
 
 #include "types.hpp"
 

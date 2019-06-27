@@ -21,7 +21,7 @@ endif()
 # Options
 # =============================================================================
 option(BILL_DOCS "Build documentation" OFF)
-option(BILL_EXAMPLES "Build examples" OFF)
+option(BILL_EXAMPLES "Build examples" ON)
 option(BILL_EXPERIMENTS "Build experiments" OFF)
 option(BILL_TESTS "Build tests" OFF)
 
