@@ -21,6 +21,8 @@
 #pragma warning(disable:5027)
 #pragma warning(disable:5039)
 #include <catch.hpp>
+#else
+#include <catch.hpp>
 #pragma warning(pop)
 #endif
 
