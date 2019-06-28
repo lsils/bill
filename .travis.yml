@@ -3,7 +3,7 @@ language: cpp
 script:
   - mkdir build
   - cd build
-  - cmake -DCMAKE_CXX_COMPILER=$COMPILER -DBILL_TEST=ON -DBILL_EXPERIMENTS=ON ..
+  - cmake -DCMAKE_CXX_COMPILER=$COMPILER -DBILL_TESTS=ON -DBILL_EXPERIMENTS=ON ..
   - make all
   - ./test/run_tests
 
