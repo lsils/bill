@@ -5,7 +5,7 @@ script:
   - cd build
   - cmake -DCMAKE_CXX_COMPILER=$COMPILER -DBILL_TESTS=ON -DBILL_EXPERIMENTS=ON ..
   - make all
-  - ./test/run_tests
+  - ./tests/run_tests
 
 matrix:
   include:
