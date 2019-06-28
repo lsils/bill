@@ -35,7 +35,7 @@
 
 #include "types.hpp"
 
-#include <cstdint>
+#include <memory>
 #include <variant>
 #include <vector>
 
