@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/lsils/bill.svg?branch=master)](https://travis-ci.org/lsils/bill)
 [![Build status](https://ci.appveyor.com/api/projects/status/pu4w14anom4lesoj?svg=true)](https://ci.appveyor.com/project/hriener/bill)
 [![License](https://img.shields.io/badge/license-MIT-000000.svg)](https://opensource.org/licenses/MIT)
 
