@@ -2,7 +2,8 @@
 | This file is distributed under the MIT License.
 | See accompanying file /LICENSE for details.
 *------------------------------------------------------------------------------------------------*/
-#include "catch.hpp"
+
+#include "catch2.hpp"
 
 #include <bill/sat/solver.hpp>
 #include <bill/sat/tseytin.hpp>
