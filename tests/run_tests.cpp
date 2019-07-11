@@ -6,7 +6,9 @@
 #define CATCH_CONFIG_MAIN
 #endif
 
-#ifdef _MSC_VER
+#include <bill/utils/platforms.hpp>
+
+#if defined(BILL_WINDOWS_PLATFORM)
 #pragma warning(push)
 #pragma warning(disable:4365)
 #pragma warning(disable:4514)
@@ -23,7 +25,7 @@
 #pragma warning(disable:5027)
 #pragma warning(disable:5039)
 #include <catch.hpp>
+#pragma warning(pop)
 #else
 #include <catch.hpp>
-#pragma warning(pop)
 #endif
