@@ -3,7 +3,7 @@
 | See accompanying file /LICENSE for details.
 *------------------------------------------------------------------------------------------------*/
 
-#include "catch2.hpp"
+#include "../catch2.hpp"
 
 #include <bill/sat/solver.hpp>
 #include <bill/sat/tseytin.hpp>
