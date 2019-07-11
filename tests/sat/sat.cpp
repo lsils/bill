@@ -2,46 +2,31 @@
 | This file is distributed under the MIT License.
 | See accompanying file /LICENSE for details.
 *------------------------------------------------------------------------------------------------*/
+
+#include "../catch2.hpp"
+
 #include <bill/sat/solver.hpp>
 #include <bill/sat/tseytin.hpp>
-
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable:4365)
-#pragma warning(disable:4514)
-#pragma warning(disable:4571)
-#pragma warning(disable:4583)
-#pragma warning(disable:4619)
-#pragma warning(disable:4623)
-#pragma warning(disable:4625)
-#pragma warning(disable:4626)
-#pragma warning(disable:4710)
-#pragma warning(disable:4711)
-#pragma warning(disable:4820)
-#pragma warning(disable:5026)
-#pragma warning(disable:5027)
-#pragma warning(disable:5039)
-#include <catch.hpp>
-#else
-#include <catch.hpp>
-#pragma warning(pop)
-#endif
 
 #include <iostream>
 #include <vector>
 
 using namespace bill;
 
-TEMPLATE_TEST_CASE("Simple SAT", "[sat][template]", solver<solvers::glucose_41>,
-                   solver<solvers::ghack>, solver<solvers::maple>)
+#if defined(BILL_WINDOWS_PLATFORM)
+#define SOLVER_TYPES solver<solvers::ghack>
+#else
+#define SOLVER_TYPES solver<solvers::glucose_41>,solver<solvers::ghack>,solver<solvers::maple>
+#endif
+
+TEMPLATE_TEST_CASE("Simple SAT", "[sat][template]", SOLVER_TYPES)
 {
 	TestType solver;
 	auto const r = solver.solve();
 	CHECK(r != result::states::unsatisfiable);
 }
 
-TEMPLATE_TEST_CASE("Simple UNSAT", "[sat][template]", solver<solvers::glucose_41>,
-                   solver<solvers::ghack>, solver<solvers::maple>)
+TEMPLATE_TEST_CASE("Simple UNSAT", "[sat][template]", SOLVER_TYPES)
 {
 	TestType solver;
 
@@ -53,8 +38,7 @@ TEMPLATE_TEST_CASE("Simple UNSAT", "[sat][template]", solver<solvers::glucose_41
 	CHECK(r == result::states::unsatisfiable);
 }
 
-TEMPLATE_TEST_CASE("De Morgan", "[sat][template]", solver<solvers::glucose_41>,
-                   solver<solvers::ghack>, solver<solvers::maple>)
+TEMPLATE_TEST_CASE("De Morgan", "[sat][template]", SOLVER_TYPES)
 {
 	TestType solver;
 
@@ -71,8 +55,7 @@ TEMPLATE_TEST_CASE("De Morgan", "[sat][template]", solver<solvers::glucose_41>,
 	CHECK(r != result::states::satisfiable);
 }
 
-TEMPLATE_TEST_CASE("Incremental", "[sat][template]", solver<solvers::glucose_41>,
-                   solver<solvers::ghack>, solver<solvers::maple>)
+TEMPLATE_TEST_CASE("Incremental", "[sat][template]", SOLVER_TYPES)
 {
 	TestType solver;
 
@@ -93,8 +76,7 @@ TEMPLATE_TEST_CASE("Incremental", "[sat][template]", solver<solvers::glucose_41>
 	CHECK(r == result::states::unsatisfiable);
 }
 
-TEMPLATE_TEST_CASE("Model", "[sat][template]", solver<solvers::glucose_41>, solver<solvers::ghack>,
-                   solver<solvers::maple>)
+TEMPLATE_TEST_CASE("Model", "[sat][template]", SOLVER_TYPES)
 {
 	TestType solver;
 
