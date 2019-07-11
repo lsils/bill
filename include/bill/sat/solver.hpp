@@ -7,13 +7,7 @@
 #include <bill/utils/platforms.hpp>
 
 #if defined (BILL_WINDOWS_PLATFORM)
-#pragma warning(push)
-#pragma warning(disable:4571)
-#pragma warning(disable:4625)
-#pragma warning(disable:4626)
-#pragma warning(disable:4710)
-#pragma warning(disable:4774)
-#pragma warning(disable:4820)
+#pragma warning(push, 0)
 #include "sat_solvers/ghack.hpp"
 #pragma warning(pop)
 #else
