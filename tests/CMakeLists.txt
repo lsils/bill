@@ -11,11 +11,9 @@ include_directories(catch2)
 #  =============================================================================
 add_custom_target(bill_tests COMMENT "Build all tests.")
 
-set(bill_tests_files
-  "${CMAKE_CURRENT_SOURCE_DIR}/run_tests.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/sat.cpp"
-  )
+file(GLOB_RECURSE FILENAMES *.cpp)
 
-add_executable(run_tests "${bill_tests_files}")
+add_executable(run_tests "${FILENAMES}")
 target_link_libraries(run_tests bill)
 add_dependencies(bill_tests run_tests)
+
