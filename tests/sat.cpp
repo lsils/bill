@@ -13,7 +13,7 @@
 using namespace bill;
 
 #if defined(BILL_WINDOWS_PLATFORM)
-#define SOLVER_TYPES solver<solvers::ghack>,solver<solvers::maple>
+#define SOLVER_TYPES solver<solvers::ghack>
 #else
 #define SOLVER_TYPES solver<solvers::glucose_41>,solver<solvers::ghack>,solver<solvers::maple>
 #endif

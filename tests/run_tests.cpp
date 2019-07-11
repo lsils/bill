@@ -20,6 +20,8 @@
 #pragma warning(disable:4626)
 #pragma warning(disable:4710)
 #pragma warning(disable:4711)
+#pragma warning(disable:4774)
+#pragma warning(disable:4820)
 #pragma warning(disable:4820)
 #pragma warning(disable:5026)
 #pragma warning(disable:5027)

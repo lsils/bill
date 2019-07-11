@@ -15,7 +15,6 @@
 #pragma warning(disable:4774)
 #pragma warning(disable:4820)
 #include "sat_solvers/ghack.hpp"
-#include "sat_solvers/maple.hpp"
 #pragma warning(pop)
 #else
 #pragma GCC diagnostic push
@@ -104,17 +103,17 @@ private:
 };
 
 enum class solvers {
-#if !defined(WINDOWS_PLATFORM)
+#if !defined(BILL_WINDOWS_PLATFORM)
 	glucose_41,
+	maple,
 #endif
 	ghack,
-	maple,
 };
 
-template<solvers Solver = solvers::maple>
+template<solvers Solver = solvers::ghack>
 class solver;
 
-#if !defined(WINDOWS_PLATFORM)
+#if !defined(BILL_WINDOWS_PLATFORM)
 template<>
 class solver<solvers::glucose_41> {
 	using solver_type = Glucose::Solver;
@@ -382,6 +381,7 @@ private:
 	result::states state_ = result::states::undefined;
 };
 
+#if !defined(BILL_WINDOWS_PLATFORM)
 template<>
 class solver<solvers::maple> {
 	using solver_type = Maple::Solver;
@@ -514,5 +514,6 @@ private:
 	/*! \brief Current state of the solver */
 	result::states state_ = result::states::dirty;
 };
+#endif
 
 } // namespace bill
