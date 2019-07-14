@@ -26,6 +26,18 @@
 #include "sat_solvers/glucose.hpp"
 #include "sat_solvers/maple.hpp"
 #pragma GCC diagnostic pop
+#else
+#pragma warning(push)
+#pragma warning(disable : 4571)
+#pragma warning(disable : 4625)
+#pragma warning(disable : 4626)
+#pragma warning(disable : 4710)
+#pragma warning(disable : 4774)
+#pragma warning(disable : 4820)
+#include "sat_solvers/ghack.hpp"
+#include "sat_solvers/glucose.hpp"
+#include "sat_solvers/maple.hpp"
+#pragma warning(pop)
 #endif
 
 #include "types.hpp"
@@ -118,6 +130,10 @@ public:
 	solver()
 	    : solver_(std::make_unique<solver_type>())
 	{}
+
+	/* disallow copying */
+	solver(solver<solvers::glucose_41> const&) = delete;
+	solver<solvers::glucose_41>& operator=(const solver<solvers::glucose_41>&) = delete;
 #pragma endregion
 
 #pragma region Modifiers
@@ -252,6 +268,10 @@ public:
 	solver()
 	    : solver_(std::make_unique<solver_type>())
 	{}
+
+	/* disallow copying */
+	solver(solver<solvers::ghack> const&) = delete;
+	solver<solvers::ghack>& operator=(const solver<solvers::ghack>&) = delete;
 #pragma endregion
 
 #pragma region Modifiers
@@ -386,6 +406,10 @@ public:
 	solver()
 	    : solver_(std::make_unique<solver_type>())
 	{}
+
+	/* disallow copying */
+	solver(solver<solvers::maple> const&) = delete;
+	solver<solvers::maple>& operator=(const solver<solvers::maple>&) = delete;
 #pragma endregion
 
 #pragma region Modifiers
