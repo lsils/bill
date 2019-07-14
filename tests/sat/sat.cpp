@@ -130,3 +130,25 @@ TEMPLATE_TEST_CASE("Model", "[sat][template]", SOLVER_TYPES)
 	                            | model.at(b.variable()) == lbool_type::true_;
 	CHECK(a_or_b_is_true);
 }
+
+TEMPLATE_TEST_CASE("Restart", "[sat][template]", SOLVER_TYPES)
+{
+	TestType solver;
+	auto const a = lit_type(solver.add_variable(), lit_type::polarities::positive);
+	auto const b = lit_type(solver.add_variable(), lit_type::polarities::positive);
+
+	auto const t0 = add_tseytin_and(solver, a, b);
+	auto const t1 = ~add_tseytin_or(solver, ~a, ~b);
+	auto const t2 = add_tseytin_xor(solver, t0, t1);
+	solver.add_clause(t2);
+
+	CHECK(solver.solve() == result::states::unsatisfiable);
+	CHECK(solver.num_variables() == 5u);
+	CHECK(solver.num_clauses() == 8u);
+
+	solver.restart();
+	CHECK(solver.solve() != result::states::unsatisfiable);
+	CHECK(solver.num_variables() == 0u);
+	CHECK(solver.num_clauses() == 0u);
+}
+

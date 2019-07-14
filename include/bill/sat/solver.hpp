@@ -49,6 +49,24 @@ public:
 		dirty,
 	};
 
+	static std::string to_string(states const& state)
+	{
+		switch (state) {
+		case states::satisfiable:
+			return "satisfiable";
+		case states::unsatisfiable:
+			return "unsatisfiable";
+		case states::timeout:
+			return "timeout";
+		case states::dirty:
+			return "dirty";
+		case states::undefined:
+		default:
+			return "undefined";
+		}
+	}
+
+#pragma region Constructors
 	result(states state = states::undefined)
 	    : state_(state)
 	{}
@@ -62,6 +80,7 @@ public:
 	    : state_(states::unsatisfiable)
 	    , data_(unsat_core)
 	{}
+#pragma endregion
 
 #pragma region Properties
 	inline bool is_satisfiable() const
@@ -89,6 +108,11 @@ public:
 	inline operator bool() const
 	{
 		return (state_ == states::satisfiable);
+	}
+
+	inline explicit operator std::string() const
+	{
+		return result::to_string(state_);
 	}
 #pragma endregion
 
@@ -118,9 +142,20 @@ public:
 	solver()
 	    : solver_(std::make_unique<solver_type>())
 	{}
+
+	/* disallow copying */
+	solver(solver<solvers::glucose_41> const&) = delete;
+	solver<solvers::glucose_41>& operator=(const solver<solvers::glucose_41>&) = delete;
 #pragma endregion
 
 #pragma region Modifiers
+	void restart()
+	{
+		solver_.reset();
+		solver_ = std::make_unique<solver_type>();
+		state_ = result::states::undefined;
+	}
+
 	var_type add_variable()
 	{
 		return solver_->newVar();
@@ -252,9 +287,20 @@ public:
 	solver()
 	    : solver_(std::make_unique<solver_type>())
 	{}
+
+	/* disallow copying */
+	solver(solver<solvers::ghack> const&) = delete;
+	solver<solvers::ghack>& operator=(const solver<solvers::ghack>&) = delete;
 #pragma endregion
 
 #pragma region Modifiers
+	void restart()
+	{
+		solver_.reset();
+		solver_ = std::make_unique<solver_type>();
+		state_ = result::states::undefined;
+	}
+
 	var_type add_variable()
 	{
 		return solver_->newVar();
@@ -386,9 +432,20 @@ public:
 	solver()
 	    : solver_(std::make_unique<solver_type>())
 	{}
+
+	/* disallow copying */
+	solver(solver<solvers::maple> const&) = delete;
+	solver<solvers::maple>& operator=(const solver<solvers::maple>&) = delete;
 #pragma endregion
 
 #pragma region Modifiers
+	void restart()
+	{
+		solver_.reset();
+		solver_ = std::make_unique<solver_type>();
+		state_ = result::states::undefined;
+	}
+
 	var_type add_variable()
 	{
 		return solver_->newVar();
