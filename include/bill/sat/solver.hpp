@@ -61,6 +61,23 @@ public:
 		dirty,
 	};
 
+	static std::string to_string(states const& state)
+	{
+		switch (state) {
+		case states::satisfiable:
+			return "satisfiable";
+		case states::unsatisfiable:
+			return "unsatisfiable";
+		case states::timeout:
+			return "timeout";
+		case states::dirty:
+			return "dirty";
+		case states::undefined:
+		default:
+			return "undefined";
+		}
+	}
+
 	result(states state = states::undefined)
 	    : state_(state)
 	{}
@@ -101,6 +118,11 @@ public:
 	inline operator bool() const
 	{
 		return (state_ == states::satisfiable);
+	}
+
+	inline explicit operator std::string() const
+	{
+		return result::to_string(state_);
 	}
 #pragma endregion
 
