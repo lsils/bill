@@ -78,6 +78,7 @@ public:
 		}
 	}
 
+#pragma region Constructors
 	result(states state = states::undefined)
 	    : state_(state)
 	{}
@@ -91,6 +92,7 @@ public:
 	    : state_(states::unsatisfiable)
 	    , data_(unsat_core)
 	{}
+#pragma endregion
 
 #pragma region Properties
 	inline bool is_satisfiable() const
