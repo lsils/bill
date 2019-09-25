@@ -168,15 +168,21 @@ public:
 		}
 	}
 
-	auto add_clause(std::vector<lit_type> const& clause)
+	auto add_clause(std::vector<lit_type>::const_iterator it, std::vector<lit_type>::const_iterator ie)
 	{
 		Glucose::vec<Glucose::Lit> literals;
-		for (auto lit : clause) {
-			literals.push(Glucose::mkLit(lit.variable(), lit.is_complemented()));
+		while (it != ie){
+			literals.push(Glucose::mkLit(it->variable(), it->is_complemented()));
+			++it;
 		}
 		auto const result = solver_->addClause_(literals);
 		state_ = result ? result::states::dirty : result::states::unsatisfiable;
 		return result;
+	}
+
+	auto add_clause(std::vector<lit_type> const& clause)
+	{
+		return add_clause(clause.begin(), clause.end());
 	}
 
 	auto add_clause(lit_type lit)
@@ -313,15 +319,21 @@ public:
 		}
 	}
 
-	auto add_clause(std::vector<lit_type> const& clause)
+	auto add_clause(std::vector<lit_type>::const_iterator it, std::vector<lit_type>::const_iterator ie)
 	{
 		GHack::vec<GHack::Lit> literals;
-		for (auto lit : clause) {
-			literals.push(GHack::mkLit(lit.variable(), lit.is_complemented()));
+		while (it != ie) {
+			literals.push(GHack::mkLit(it->variable(), it->is_complemented()));
+			++it;
 		}
 		auto const result = solver_->addClause_(literals);
 		state_ = result ? result::states::dirty : result::states::unsatisfiable;
 		return result;
+	}
+
+	auto add_clause(std::vector<lit_type> const& clause)
+	{
+		return add_clause(clause.begin(), clause.end());
 	}
 
 	auto add_clause(lit_type lit)
@@ -458,15 +470,21 @@ public:
 		}
 	}
 
-	auto add_clause(std::vector<lit_type> const& clause)
+	auto add_clause(std::vector<lit_type>::const_iterator it, std::vector<lit_type>::const_iterator ie)
 	{
 		Maple::vec<Maple::Lit> literals;
-		for (auto lit : clause) {
-			literals.push(Maple::mkLit(lit.variable(), lit.is_complemented()));
+		while (it != ie) {
+			literals.push(Maple::mkLit(it->variable(), it->is_complemented()));
+			++it;
 		}
 		auto const result = solver_->addClause_(literals);
 		state_ = result ? result::states::dirty : result::states::unsatisfiable;
 		return result;
+	}
+
+	auto add_clause(std::vector<lit_type> const& clause)
+	{
+		return add_clause(clause.begin(), clause.end());
 	}
 
 	auto add_clause(lit_type lit)
