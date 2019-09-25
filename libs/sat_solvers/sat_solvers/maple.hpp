@@ -2319,9 +2319,9 @@ protected:
     }
 
 #ifdef BIN_DRUP
-    static int buf_len;
-    static unsigned char drup_buf[];
-    static unsigned char* buf_ptr;
+    static inline int buf_len = 0;
+    static inline unsigned char drup_buf[2 * 1024 * 1024];
+    static inline unsigned char* buf_ptr = drup_buf;
 
     static inline void byteDRUP(Lit l){
         unsigned int u = 2 * (var(l) + 1) + sign(l);
@@ -2559,13 +2559,6 @@ namespace Maple {
 
 //#define PRINT_OUT
 
-#ifdef BIN_DRUP
-int Solver::buf_len = 0;
-unsigned char Solver::drup_buf[2 * 1024 * 1024];
-unsigned char* Solver::buf_ptr = drup_buf;
-#endif
-
-
 //=================================================================================================
 // Options:
 
@@ -2593,7 +2586,7 @@ static IntOption     opt_conf_to_chrono    (_cat, "confl-to-chrono",  "Controls 
 // Constructor/Destructor:
 
 
-Solver::Solver() :
+inline Solver::Solver() :
 
     // Parameters (user settable):
     //
@@ -2677,14 +2670,14 @@ Solver::Solver() :
 {}
 
 
-Solver::~Solver()
+inline Solver::~Solver()
 {
 }
 
 
 // simplify All
 //
-CRef Solver::simplePropagate()
+inline CRef Solver::simplePropagate()
 {
     CRef    confl = CRef_Undef;
     int     num_props = 0;
@@ -2823,14 +2816,14 @@ NextClause:;
     return confl;
 }
 
-void Solver::simpleUncheckEnqueue(Lit p, CRef from){
+inline void Solver::simpleUncheckEnqueue(Lit p, CRef from){
     assert(value(p) == l_Undef);
     assigns[var(p)] = lbool(!sign(p)); // this makes a lbool object whose value is sign(p)
     vardata[var(p)].reason = from;
     trail.push_(p);
 }
 
-void Solver::cancelUntilTrailRecord()
+inline void Solver::cancelUntilTrailRecord()
 {
     for (int c = trail.size() - 1; c >= trailRecord; c--)
     {
@@ -2843,7 +2836,7 @@ void Solver::cancelUntilTrailRecord()
 
 }
 
-void Solver::litsEnqueue(int cutP, Clause& c)
+inline void Solver::litsEnqueue(int cutP, Clause& c)
 {
     for (int i = cutP; i < c.size(); i++)
     {
@@ -2851,11 +2844,11 @@ void Solver::litsEnqueue(int cutP, Clause& c)
     }
 }
 
-bool Solver::removed(CRef cr) {
+inline bool Solver::removed(CRef cr) {
     return ca[cr].mark() == 1;
 }
 
-void Solver::simpleAnalyze(CRef confl, vec<Lit>& out_learnt, vec<CRef>& reason_clause, bool True_confl)
+inline void Solver::simpleAnalyze(CRef confl, vec<Lit>& out_learnt, vec<CRef>& reason_clause, bool True_confl)
 {
     int pathC = 0;
     Lit p = lit_Undef;
@@ -2900,7 +2893,7 @@ void Solver::simpleAnalyze(CRef confl, vec<Lit>& out_learnt, vec<CRef>& reason_c
     } while (pathC >= 0);
 }
 
-void Solver::simplifyLearnt(Clause& c)
+inline void Solver::simplifyLearnt(Clause& c)
 {
     ////
     original_length_record += c.size();
@@ -2970,7 +2963,7 @@ void Solver::simplifyLearnt(Clause& c)
 
 }
 
-bool Solver::simplifyLearnt_x(vec<CRef>& learnts_x)
+inline bool Solver::simplifyLearnt_x(vec<CRef>& learnts_x)
 {
     int beforeSize, afterSize;
     int learnts_x_size_before = learnts_x.size();
@@ -3081,7 +3074,7 @@ bool Solver::simplifyLearnt_x(vec<CRef>& learnts_x)
     return true;
 }
 
-bool Solver::simplifyLearnt_core()
+inline bool Solver::simplifyLearnt_core()
 {
     int beforeSize, afterSize;
     int learnts_core_size_before = learnts_core.size();
@@ -3206,7 +3199,7 @@ bool Solver::simplifyLearnt_core()
 
 }
 
-bool Solver::simplifyLearnt_tier2()
+inline bool Solver::simplifyLearnt_tier2()
 {
     int beforeSize, afterSize;
     int learnts_tier2_size_before = learnts_tier2.size();
@@ -3338,7 +3331,7 @@ bool Solver::simplifyLearnt_tier2()
 
 }
 
-bool Solver::simplifyAll()
+inline bool Solver::simplifyAll()
 {
     ////
     simplified_length_record = original_length_record = 0;
@@ -3370,7 +3363,7 @@ bool Solver::simplifyAll()
 // Creates a new SAT variable in the solver. If 'decision' is cleared, variable will not be
 // used as a decision variable (NOTE! This has effects on the meaning of a SATISFIABLE result).
 //
-Var Solver::newVar(bool sign, bool dvar)
+inline Var Solver::newVar(bool sign, bool dvar)
 {
     int v = nVars();
     watches_bin.init(mkLit(v, false));
@@ -3404,7 +3397,7 @@ Var Solver::newVar(bool sign, bool dvar)
 }
 
 
-bool Solver::addClause_(vec<Lit>& ps)
+inline bool Solver::addClause_(vec<Lit>& ps)
 {
     assert(decisionLevel() == 0);
     if (!ok) return false;
@@ -3455,7 +3448,7 @@ bool Solver::addClause_(vec<Lit>& ps)
 }
 
 
-void Solver::attachClause(CRef cr) {
+inline void Solver::attachClause(CRef cr) {
     const Clause& c = ca[cr];
     assert(c.size() > 1);
     OccLists<Lit, vec<Watcher>, WatcherDeleted>& ws = c.size() == 2 ? watches_bin : watches;
@@ -3465,7 +3458,7 @@ void Solver::attachClause(CRef cr) {
     else            clauses_literals += c.size(); }
 
 
-void Solver::detachClause(CRef cr, bool strict) {
+inline void Solver::detachClause(CRef cr, bool strict) {
     const Clause& c = ca[cr];
     assert(c.size() > 1);
     OccLists<Lit, vec<Watcher>, WatcherDeleted>& ws = c.size() == 2 ? watches_bin : watches;
@@ -3483,7 +3476,7 @@ void Solver::detachClause(CRef cr, bool strict) {
     else            clauses_literals -= c.size(); }
 
 
-void Solver::removeClause(CRef cr) {
+inline void Solver::removeClause(CRef cr) {
     Clause& c = ca[cr];
 
     if (drup_file){
@@ -3510,7 +3503,7 @@ void Solver::removeClause(CRef cr) {
 }
 
 
-bool Solver::satisfied(const Clause& c) const {
+inline bool Solver::satisfied(const Clause& c) const {
     for (int i = 0; i < c.size(); i++)
         if (value(c[i]) == l_True)
             return true;
@@ -3519,7 +3512,7 @@ bool Solver::satisfied(const Clause& c) const {
 
 // Revert to the state at given level (keeping all assignment at 'level' but not beyond).
 //
-void Solver::cancelUntil(int bLevel) {
+inline void Solver::cancelUntil(int bLevel) {
 	
     if (decisionLevel() > bLevel){
 #ifdef PRINT_OUT
@@ -3579,7 +3572,7 @@ void Solver::cancelUntil(int bLevel) {
 // Major methods:
 
 
-Lit Solver::pickBranchLit()
+inline Lit Solver::pickBranchLit()
 {
     Var next = var_Undef;
     //    Heap<VarOrderLt>& order_heap = VSIDS ? order_heap_VSIDS : order_heap_CHB;
@@ -3678,7 +3671,7 @@ inline Solver::ConflictData Solver::FindConflictLevel(CRef cind)
 |        rest of literals. There may be others from the same level though.
 |  
 |________________________________________________________________________________________________@*/
-void Solver::analyze(CRef confl, vec<Lit>& out_learnt, int& out_btlevel, int& out_lbd)
+inline void Solver::analyze(CRef confl, vec<Lit>& out_learnt, int& out_btlevel, int& out_lbd)
 {
     int pathC = 0;
     Lit p     = lit_Undef;
@@ -3834,7 +3827,7 @@ void Solver::analyze(CRef confl, vec<Lit>& out_learnt, int& out_btlevel, int& ou
 
 
 // Try further learnt clause minimization by means of binary clause resolution.
-bool Solver::binResMinimize(vec<Lit>& out_learnt)
+inline bool Solver::binResMinimize(vec<Lit>& out_learnt)
 {
     // Preparation: remember which false variables we have in 'out_learnt'.
     counter++;
@@ -3868,7 +3861,7 @@ bool Solver::binResMinimize(vec<Lit>& out_learnt)
 
 // Check if 'p' can be removed. 'abstract_levels' is used to abort early if the algorithm is
 // visiting literals at levels that cannot be removed later.
-bool Solver::litRedundant(Lit p, uint32_t abstract_levels)
+inline bool Solver::litRedundant(Lit p, uint32_t abstract_levels)
 {
     analyze_stack.clear(); analyze_stack.push(p);
     int top = analyze_toclear.size();
@@ -3912,7 +3905,7 @@ bool Solver::litRedundant(Lit p, uint32_t abstract_levels)
 |    Calculates the (possibly empty) set of assumptions that led to the assignment of 'p', and
 |    stores the result in 'out_conflict'.
 |________________________________________________________________________________________________@*/
-void Solver::analyzeFinal(Lit p, vec<Lit>& out_conflict)
+inline void Solver::analyzeFinal(Lit p, vec<Lit>& out_conflict)
 {
     out_conflict.clear();
     out_conflict.push(p);
@@ -3942,7 +3935,7 @@ void Solver::analyzeFinal(Lit p, vec<Lit>& out_conflict)
 }
 
 
-void Solver::uncheckedEnqueue(Lit p, int level, CRef from)
+inline void Solver::uncheckedEnqueue(Lit p, int level, CRef from)
 {
     assert(value(p) == l_Undef);
     Var x = var(p);
@@ -3978,7 +3971,7 @@ void Solver::uncheckedEnqueue(Lit p, int level, CRef from)
 |    Post-conditions:
 |      * the propagation queue is empty, even if there was a conflict.
 |________________________________________________________________________________________________@*/
-CRef Solver::propagate()
+inline CRef Solver::propagate()
 {
     CRef    confl     = CRef_Undef;
     int     num_props = 0;
@@ -4111,7 +4104,7 @@ struct reduceDB_lt {
     reduceDB_lt(ClauseAllocator& ca_) : ca(ca_) {}
     bool operator () (CRef x, CRef y) const { return ca[x].activity() < ca[y].activity(); }
 };
-void Solver::reduceDB()
+inline void Solver::reduceDB()
 {
     int     i, j;
     //if (local_learnts_dirty) cleanLearnts(learnts_local, LOCAL);
@@ -4134,7 +4127,7 @@ void Solver::reduceDB()
 
     checkGarbage();
 }
-void Solver::reduceDB_Tier2()
+inline void Solver::reduceDB_Tier2()
 {
     int i, j;
     for (i = j = 0; i < learnts_tier2.size(); i++){
@@ -4153,7 +4146,7 @@ void Solver::reduceDB_Tier2()
 }
 
 
-void Solver::removeSatisfied(vec<CRef>& cs)
+inline void Solver::removeSatisfied(vec<CRef>& cs)
 {
     int i, j;
     for (i = j = 0; i < cs.size(); i++){
@@ -4166,7 +4159,7 @@ void Solver::removeSatisfied(vec<CRef>& cs)
     cs.shrink(i - j);
 }
 
-void Solver::safeRemoveSatisfied(vec<CRef>& cs, unsigned valid_mark)
+inline void Solver::safeRemoveSatisfied(vec<CRef>& cs, unsigned valid_mark)
 {
     int i, j;
     for (i = j = 0; i < cs.size(); i++){
@@ -4180,7 +4173,7 @@ void Solver::safeRemoveSatisfied(vec<CRef>& cs, unsigned valid_mark)
     cs.shrink(i - j);
 }
 
-void Solver::rebuildOrderHeap()
+inline void Solver::rebuildOrderHeap()
 {
     vec<Var> vs;
     for (Var v = 0; v < nVars(); v++)
@@ -4201,7 +4194,7 @@ void Solver::rebuildOrderHeap()
 |    Simplify the clause database according to the current top-level assigment. Currently, the only
 |    thing done here is the removal of satisfied clauses, but more things can be put here.
 |________________________________________________________________________________________________@*/
-bool Solver::simplify()
+inline bool Solver::simplify()
 {
     assert(decisionLevel() == 0);
 
@@ -4228,7 +4221,7 @@ bool Solver::simplify()
 
 // pathCs[k] is the number of variables assigned at level k,
 // it is initialized to 0 at the begining and reset to 0 after the function execution
-bool Solver::collectFirstUIP(CRef confl){
+inline bool Solver::collectFirstUIP(CRef confl){
     involved_lits.clear();
     int max_level=1;
     Clause& c=ca[confl]; int minLevel=decisionLevel();
@@ -4327,7 +4320,7 @@ struct UIPOrderByILevel_Lt {
     UIPOrderByILevel_Lt(const vec<double>&  iLevel, Solver& para_solver) : solver(para_solver), var_iLevel(iLevel) { }
 };
 
-CRef Solver::propagateLits(vec<Lit>& lits) {
+inline CRef Solver::propagateLits(vec<Lit>& lits) {
     Lit lit;
     int i;
 
@@ -4356,7 +4349,7 @@ CRef Solver::propagateLits(vec<Lit>& lits) {
 |    all variables are decision variables, this means that the clause set is satisfiable. 'l_False'
 |    if the clause set is unsatisfiable. 'l_Undef' if the bound on number of conflicts is reached.
 |________________________________________________________________________________________________@*/
-lbool Solver::search(int& nof_conflicts)
+inline lbool Solver::search(int& nof_conflicts)
 {
     assert(ok);
     int         backtrack_level;
@@ -4539,7 +4532,7 @@ lbool Solver::search(int& nof_conflicts)
 }
 
 
-double Solver::progressEstimate() const
+inline double Solver::progressEstimate() const
 {
     double  progress = 0;
     double  F = 1.0 / nVars();
@@ -4585,7 +4578,7 @@ static bool switch_mode = false;
 static void SIGALRM_switch(int signum) { switch_mode = true; }
 
 // NOTE: assumptions passed in member-variable 'assumptions'.
-lbool Solver::solve_()
+inline lbool Solver::solve_()
 {
     signal(SIGALRM, SIGALRM_switch);
     alarm(2500);
@@ -4673,7 +4666,7 @@ static Var mapVar(Var x, vec<Var>& map, Var& max)
 }
 
 
-void Solver::toDimacs(FILE* f, Clause& c, vec<Var>& map, Var& max)
+inline void Solver::toDimacs(FILE* f, Clause& c, vec<Var>& map, Var& max)
 {
     if (satisfied(c)) return;
 
@@ -4684,7 +4677,7 @@ void Solver::toDimacs(FILE* f, Clause& c, vec<Var>& map, Var& max)
 }
 
 
-void Solver::toDimacs(const char *file, const vec<Lit>& assumps)
+inline void Solver::toDimacs(const char *file, const vec<Lit>& assumps)
 {
     FILE* f = fopen(file, "wr");
     if (f == NULL)
@@ -4694,7 +4687,7 @@ void Solver::toDimacs(const char *file, const vec<Lit>& assumps)
 }
 
 
-void Solver::toDimacs(FILE* f, const vec<Lit>& assumps)
+inline void Solver::toDimacs(FILE* f, const vec<Lit>& assumps)
 {
     // Handle case when solver is in contradictory state:
     if (!ok){
@@ -4739,7 +4732,7 @@ void Solver::toDimacs(FILE* f, const vec<Lit>& assumps)
 //=================================================================================================
 // Garbage Collection methods:
 
-void Solver::relocAll(ClauseAllocator& to)
+inline void Solver::relocAll(ClauseAllocator& to)
 {
     // All watchers:
     //
@@ -4787,7 +4780,7 @@ void Solver::relocAll(ClauseAllocator& to)
 }
 
 
-void Solver::garbageCollect()
+inline void Solver::garbageCollect()
 {
     // Initialize the next region to a size corresponding to the estimated utilization degree. This
     // is not precise but should avoid some unnecessary reallocations for the new region:
@@ -5060,7 +5053,7 @@ static DoubleOption opt_simp_garbage_frac(_simp_cat, "simp-gc-frac", "The fracti
 // Constructor/Destructor:
 
 
-SimpSolver::SimpSolver() :
+inline SimpSolver::SimpSolver() :
     parsing            (false)
   , grow               (opt_grow)
   , clause_lim         (opt_clause_lim)
@@ -5086,12 +5079,12 @@ SimpSolver::SimpSolver() :
 }
 
 
-SimpSolver::~SimpSolver()
+inline SimpSolver::~SimpSolver()
 {
 }
 
 
-Var SimpSolver::newVar(bool sign, bool dvar) {
+inline Var SimpSolver::newVar(bool sign, bool dvar) {
     Var v = Solver::newVar(sign, dvar);
 
     frozen    .push((char)false);
@@ -5108,7 +5101,7 @@ Var SimpSolver::newVar(bool sign, bool dvar) {
 
 
 
-lbool SimpSolver::solve_(bool do_simp, bool turn_off_simp)
+inline lbool SimpSolver::solve_(bool do_simp, bool turn_off_simp)
 {
     vec<Var> extra_frozen;
     lbool    result = l_True;
@@ -5150,7 +5143,7 @@ lbool SimpSolver::solve_(bool do_simp, bool turn_off_simp)
 
 
 
-bool SimpSolver::addClause_(vec<Lit>& ps)
+inline bool SimpSolver::addClause_(vec<Lit>& ps)
 {
 #ifndef NDEBUG
     for (int i = 0; i < ps.size(); i++)
@@ -5200,7 +5193,7 @@ bool SimpSolver::addClause_(vec<Lit>& ps)
 }
 
 
-void SimpSolver::removeClause(CRef cr)
+inline void SimpSolver::removeClause(CRef cr)
 {
     const Clause& c = ca[cr];
 
@@ -5215,7 +5208,7 @@ void SimpSolver::removeClause(CRef cr)
 }
 
 
-bool SimpSolver::strengthenClause(CRef cr, Lit l)
+inline bool SimpSolver::strengthenClause(CRef cr, Lit l)
 {
     Clause& c = ca[cr];
     assert(decisionLevel() == 0);
@@ -5263,7 +5256,7 @@ bool SimpSolver::strengthenClause(CRef cr, Lit l)
 
 
 // Returns FALSE if clause is always satisfied ('out_clause' should not be used).
-bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, vec<Lit>& out_clause)
+inline bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, vec<Lit>& out_clause)
 {
     merges++;
     out_clause.clear();
@@ -5294,7 +5287,7 @@ bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, vec<Lit>& ou
 
 
 // Returns FALSE if clause is always satisfied.
-bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, int& size)
+inline bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, int& size)
 {
     merges++;
 
@@ -5323,7 +5316,7 @@ bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, int& size)
 }
 
 
-void SimpSolver::gatherTouchedClauses()
+inline void SimpSolver::gatherTouchedClauses()
 {
     if (n_touched == 0) return;
 
@@ -5351,7 +5344,7 @@ void SimpSolver::gatherTouchedClauses()
 }
 
 
-bool SimpSolver::implied(const vec<Lit>& c)
+inline bool SimpSolver::implied(const vec<Lit>& c)
 {
     assert(decisionLevel() == 0);
 
@@ -5372,7 +5365,7 @@ bool SimpSolver::implied(const vec<Lit>& c)
 
 
 // Backward subsumption + backward subsumption resolution
-bool SimpSolver::backwardSubsumptionCheck(bool verbose)
+inline bool SimpSolver::backwardSubsumptionCheck(bool verbose)
 {
     int cnt = 0;
     int subsumed = 0;
@@ -5439,7 +5432,7 @@ bool SimpSolver::backwardSubsumptionCheck(bool verbose)
 }
 
 
-bool SimpSolver::asymm(Var v, CRef cr)
+inline bool SimpSolver::asymm(Var v, CRef cr)
 {
     Clause& c = ca[cr];
     assert(decisionLevel() == 0);
@@ -5467,7 +5460,7 @@ bool SimpSolver::asymm(Var v, CRef cr)
 }
 
 
-bool SimpSolver::asymmVar(Var v)
+inline bool SimpSolver::asymmVar(Var v)
 {
     assert(use_simplification);
 
@@ -5517,7 +5510,7 @@ static void mkElimClause(vec<uint32_t>& elimclauses, Var v, Clause& c)
 
 
 
-bool SimpSolver::eliminateVar(Var v)
+inline bool SimpSolver::eliminateVar(Var v)
 {
     assert(!frozen[v]);
     assert(!isEliminated(v));
@@ -5580,7 +5573,7 @@ bool SimpSolver::eliminateVar(Var v)
 }
 
 
-bool SimpSolver::substitute(Var v, Lit x)
+inline bool SimpSolver::substitute(Var v, Lit x)
 {
     assert(!frozen[v]);
     assert(!isEliminated(v));
@@ -5612,7 +5605,7 @@ bool SimpSolver::substitute(Var v, Lit x)
 }
 
 
-void SimpSolver::extendModel()
+inline void SimpSolver::extendModel()
 {
     int i, j;
     Lit x;
@@ -5629,7 +5622,7 @@ void SimpSolver::extendModel()
 }
 
 // Almost duplicate of Solver::removeSatisfied. Didn't want to make the base method 'virtual'.
-void SimpSolver::removeSatisfied()
+inline void SimpSolver::removeSatisfied()
 {
     int i, j;
     for (i = j = 0; i < clauses.size(); i++){
@@ -5645,7 +5638,7 @@ void SimpSolver::removeSatisfied()
 
 // The technique and code are by the courtesy of the GlueMiniSat team. Thank you!
 // It helps solving certain types of huge problems tremendously.
-bool SimpSolver::eliminate(bool turn_off_elim)
+inline bool SimpSolver::eliminate(bool turn_off_elim)
 {
     bool res = true;
     int iter = 0;
@@ -5719,7 +5712,7 @@ cleanup:
 }
 
 
-bool SimpSolver::eliminate_()
+inline bool SimpSolver::eliminate_()
 {
     if (!simplify())
         return false;
@@ -5800,7 +5793,7 @@ bool SimpSolver::eliminate_()
 // Garbage Collection methods:
 
 
-void SimpSolver::relocAll(ClauseAllocator& to)
+inline void SimpSolver::relocAll(ClauseAllocator& to)
 {
     if (!use_simplification) return;
 
@@ -5824,7 +5817,7 @@ void SimpSolver::relocAll(ClauseAllocator& to)
 }
 
 
-void SimpSolver::garbageCollect()
+inline void SimpSolver::garbageCollect()
 {
     // Initialize the next region to a size corresponding to the estimated utilization degree. This
     // is not precise but should avoid some unnecessary reallocations for the new region:

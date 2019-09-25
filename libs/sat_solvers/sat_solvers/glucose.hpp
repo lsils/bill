@@ -5598,7 +5598,7 @@ static DoubleOption opt_simp_garbage_frac("SIMP", "simp-gc-frac", "The fraction 
 // Constructor/Destructor:
 
 
-SimpSolver::SimpSolver() :
+inline SimpSolver::SimpSolver() :
    Solver()
   , grow               (opt_grow)
   , clause_lim         (opt_clause_lim)
@@ -5624,13 +5624,13 @@ SimpSolver::SimpSolver() :
 }
 
 
-SimpSolver::~SimpSolver()
+inline SimpSolver::~SimpSolver()
 {
 }
 
 
 
-SimpSolver::SimpSolver(const SimpSolver &s) : Solver(s)
+inline SimpSolver::SimpSolver(const SimpSolver &s) : Solver(s)
   , grow               (s.grow)
   , clause_lim         (s.clause_lim)
   , subsumption_lim    (s.subsumption_lim)
@@ -5675,7 +5675,7 @@ SimpSolver::SimpSolver(const SimpSolver &s) : Solver(s)
 
 
 
-Var SimpSolver::newVar(bool sign, bool dvar) {
+inline Var SimpSolver::newVar(bool sign, bool dvar) {
     Var v = Solver::newVar(sign, dvar);
     frozen    .push((char)false);
     eliminated.push((char)false);
@@ -5689,7 +5689,7 @@ Var SimpSolver::newVar(bool sign, bool dvar) {
     }
     return v; }
 
-lbool SimpSolver::solve_(bool do_simp, bool turn_off_simp)
+inline lbool SimpSolver::solve_(bool do_simp, bool turn_off_simp)
 {
     vec<Var> extra_frozen;
     lbool    result = l_True;
@@ -5731,7 +5731,7 @@ lbool SimpSolver::solve_(bool do_simp, bool turn_off_simp)
 
 
 
-bool SimpSolver::addClause_(vec<Lit>& ps)
+inline bool SimpSolver::addClause_(vec<Lit>& ps)
 {
 #ifndef NDEBUG
     for (int i = 0; i < ps.size(); i++)
@@ -5785,7 +5785,7 @@ bool SimpSolver::addClause_(vec<Lit>& ps)
 
 
 
-void SimpSolver::removeClause(CRef cr,bool inPurgatory)
+inline void SimpSolver::removeClause(CRef cr,bool inPurgatory)
 {
     const Clause& c = ca[cr];
 
@@ -5800,7 +5800,7 @@ void SimpSolver::removeClause(CRef cr,bool inPurgatory)
 }
 
 
-bool SimpSolver::strengthenClause(CRef cr, Lit l)
+inline bool SimpSolver::strengthenClause(CRef cr, Lit l)
 {
     Clause& c = ca[cr];
     assert(decisionLevel() == 0);
@@ -5856,7 +5856,7 @@ bool SimpSolver::strengthenClause(CRef cr, Lit l)
 
 
 // Returns FALSE if clause is always satisfied ('out_clause' should not be used).
-bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, vec<Lit>& out_clause)
+inline bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, vec<Lit>& out_clause)
 {
     merges++;
     out_clause.clear();
@@ -5887,7 +5887,7 @@ bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, vec<Lit>& ou
 
 
 // Returns FALSE if clause is always satisfied.
-bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, int& size)
+inline bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, int& size)
 {
     merges++;
 
@@ -5916,7 +5916,7 @@ bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, int& size)
 }
 
 
-void SimpSolver::gatherTouchedClauses()
+inline void SimpSolver::gatherTouchedClauses()
 {
     if (n_touched == 0) return;
 
@@ -5944,7 +5944,7 @@ void SimpSolver::gatherTouchedClauses()
 }
 
 
-bool SimpSolver::implied(const vec<Lit>& c)
+inline bool SimpSolver::implied(const vec<Lit>& c)
 {
     assert(decisionLevel() == 0);
 
@@ -5965,7 +5965,7 @@ bool SimpSolver::implied(const vec<Lit>& c)
 
 
 // Backward subsumption + backward subsumption resolution
-bool SimpSolver::backwardSubsumptionCheck(bool verbose)
+inline bool SimpSolver::backwardSubsumptionCheck(bool verbose)
 {
     int cnt = 0;
     int subsumed = 0;
@@ -6032,7 +6032,7 @@ bool SimpSolver::backwardSubsumptionCheck(bool verbose)
 }
 
 
-bool SimpSolver::asymm(Var v, CRef cr)
+inline bool SimpSolver::asymm(Var v, CRef cr)
 {
     Clause& c = ca[cr];
     assert(decisionLevel() == 0);
@@ -6059,7 +6059,7 @@ bool SimpSolver::asymm(Var v, CRef cr)
 }
 
 
-bool SimpSolver::asymmVar(Var v)
+inline bool SimpSolver::asymmVar(Var v)
 {
     assert(use_simplification);
 
@@ -6109,7 +6109,7 @@ static void mkElimClause(vec<uint32_t>& elimclauses, Var v, Clause& c)
 
 
 
-bool SimpSolver::eliminateVar(Var v)
+inline bool SimpSolver::eliminateVar(Var v)
 {
     assert(!frozen[v]);
     assert(!isEliminated(v));
@@ -6171,7 +6171,7 @@ bool SimpSolver::eliminateVar(Var v)
 }
 
 
-bool SimpSolver::substitute(Var v, Lit x)
+inline bool SimpSolver::substitute(Var v, Lit x)
 {
     assert(!frozen[v]);
     assert(!isEliminated(v));
@@ -6205,7 +6205,7 @@ bool SimpSolver::substitute(Var v, Lit x)
 }
 
 
-void SimpSolver::extendModel()
+inline void SimpSolver::extendModel()
 {
     int i, j;
     Lit x;
@@ -6224,7 +6224,7 @@ void SimpSolver::extendModel()
 }
 
 
-bool SimpSolver::eliminate(bool turn_off_elim)
+inline bool SimpSolver::eliminate(bool turn_off_elim)
 {
     if (!simplify()) {
         ok = false;
@@ -6321,7 +6321,7 @@ bool SimpSolver::eliminate(bool turn_off_elim)
 }
 
 
-void SimpSolver::cleanUpClauses()
+inline void SimpSolver::cleanUpClauses()
 {
     occurs.cleanAll();
     int i,j;
@@ -6336,7 +6336,7 @@ void SimpSolver::cleanUpClauses()
 // Garbage Collection methods:
 
 
-void SimpSolver::relocAll(ClauseAllocator& to)
+inline void SimpSolver::relocAll(ClauseAllocator& to)
 {
     if (!use_simplification) return;
 
@@ -6359,7 +6359,7 @@ void SimpSolver::relocAll(ClauseAllocator& to)
 }
 
 
-void SimpSolver::garbageCollect()
+inline void SimpSolver::garbageCollect()
 {
     // Initialize the next region to a size corresponding to the estimated utilization degree. This
     // is not precise but should avoid some unnecessary reallocations for the new region:
