@@ -9,6 +9,7 @@ v0.1 (not yet released)
     - MapleSAT (`solver<solvers::maple>`)
     - GHack (`solver<solvers::ghack>`)
     - Glucose 4.1 (`solver<solvers::glucose_41>`)
+    - ABC bsat2 (`solver<solvers::bsat2>`)
 * Types:
     - Wrapper for variables (`var_type`)
     - Wrapper for literals (`lit_type`)

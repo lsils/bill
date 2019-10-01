@@ -612,8 +612,8 @@ public:
 	}
 
 	/* disallow copying */
-	solver(solver<solvers::ghack> const&) = delete;
-	solver<solvers::ghack>& operator=(const solver<solvers::ghack>&) = delete;
+	solver(solver<solvers::bsat2> const&) = delete;
+	solver<solvers::bsat2>& operator=(const solver<solvers::bsat2>&) = delete;
 #pragma endregion
 
 #pragma region Modifiers

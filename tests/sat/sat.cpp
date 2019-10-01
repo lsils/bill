@@ -32,8 +32,10 @@ TEMPLATE_TEST_CASE("Simple UNSAT", "[sat][template]", SOLVER_TYPES)
 	TestType solver;
 
 	auto const a = lit_type(solver.add_variable(), lit_type::polarities::positive);
-	solver.add_clause(a);
+	auto const b = lit_type(solver.add_variable(), lit_type::polarities::positive);
+	solver.add_clause({a, b});
 	solver.add_clause(~a);
+	solver.add_clause(~b);
 
 	auto const r = solver.solve();
 	CHECK(r == result::states::unsatisfiable);
