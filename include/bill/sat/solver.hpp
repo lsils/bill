@@ -6,9 +6,10 @@
 
 #include <bill/utils/platforms.hpp>
 
-#if defined (BILL_WINDOWS_PLATFORM)
+#if defined(BILL_WINDOWS_PLATFORM)
 #pragma warning(push)
-#pragma warning(disable : 4018 4127 4189 4200 4242 4244 4245 4305 4365 4388 4389 4456 4457 4459 4514 4552 4571 4583 4619 4623 4625 4626 4706 4710 4711 4774 4820 4820 4996 5026 5027 5039)
+#pragma warning( \
+    disable : 4018 4127 4189 4200 4242 4244 4245 4305 4365 4388 4389 4456 4457 4459 4514 4552 4571 4583 4619 4623 4625 4626 4706 4710 4711 4774 4820 4820 4996 5026 5027 5039)
 #include "sat_solvers/ghack.hpp"
 #pragma warning(pop)
 #else
@@ -25,6 +26,15 @@
 #include "sat_solvers/ghack.hpp"
 #include "sat_solvers/glucose.hpp"
 #include "sat_solvers/maple.hpp"
+#define UNIX
+#ifdef UNIX
+#define LIN64
+#elif WIN32
+#define NOMINMAX
+#endif
+#define ABC_NAMESPACE pabc
+#define ABC_USE_NO_READLINE
+#include "sat_solvers/abc.hpp"
 #pragma GCC diagnostic pop
 #endif
 
@@ -127,6 +137,7 @@ enum class solvers {
 	maple,
 #endif
 	ghack,
+	bsat2,
 };
 
 template<solvers Solver = solvers::ghack>
@@ -168,10 +179,11 @@ public:
 		}
 	}
 
-	auto add_clause(std::vector<lit_type>::const_iterator it, std::vector<lit_type>::const_iterator ie)
+	auto add_clause(std::vector<lit_type>::const_iterator it,
+	                std::vector<lit_type>::const_iterator ie)
 	{
 		Glucose::vec<Glucose::Lit> literals;
-		while (it != ie){
+		while (it != ie) {
 			literals.push(Glucose::mkLit(it->variable(), it->is_complemented()));
 			++it;
 		}
@@ -319,7 +331,8 @@ public:
 		}
 	}
 
-	auto add_clause(std::vector<lit_type>::const_iterator it, std::vector<lit_type>::const_iterator ie)
+	auto add_clause(std::vector<lit_type>::const_iterator it,
+	                std::vector<lit_type>::const_iterator ie)
 	{
 		GHack::vec<GHack::Lit> literals;
 		while (it != ie) {
@@ -470,7 +483,8 @@ public:
 		}
 	}
 
-	auto add_clause(std::vector<lit_type>::const_iterator it, std::vector<lit_type>::const_iterator ie)
+	auto add_clause(std::vector<lit_type>::const_iterator it,
+	                std::vector<lit_type>::const_iterator ie)
 	{
 		Maple::vec<Maple::Lit> literals;
 		while (it != ie) {
@@ -585,5 +599,158 @@ private:
 	result::states state_ = result::states::dirty;
 };
 #endif
+
+template<>
+class solver<solvers::bsat2> {
+	using solver_type = pabc::sat_solver;
+
+public:
+#pragma region Constructors
+	solver()
+	{
+		solver_ = pabc::sat_solver_new();
+	}
+
+	/* disallow copying */
+	solver(solver<solvers::ghack> const&) = delete;
+	solver<solvers::ghack>& operator=(const solver<solvers::ghack>&) = delete;
+#pragma endregion
+
+#pragma region Modifiers
+	void restart()
+	{
+		pabc::sat_solver_delete(solver_);
+		solver_ = pabc::sat_solver_new();
+		state_ = result::states::undefined;
+	}
+
+	var_type add_variable()
+	{
+		return pabc::sat_solver_addvar(solver_);
+	}
+
+	void add_variables(uint32_t num_variables = 1)
+	{
+		for (auto i = 0u; i < num_variables; ++i) {
+			pabc::sat_solver_addvar(solver_);
+		}
+	}
+
+	auto add_clause(std::vector<lit_type>::const_iterator it,
+	                std::vector<lit_type>::const_iterator ie)
+	{
+		pabc::lit literals[2048];
+		uint32_t counter = 0u;
+		while (it != ie) {
+			literals[counter++] = pabc::Abc_Var2Lit(it->variable(),
+			                                        it->is_complemented());
+			++it;
+		}
+		auto const result = pabc::sat_solver_addclause(solver_, literals, literals + counter);
+		state_ = result ? result::states::dirty : result::states::unsatisfiable;
+		return result;
+	}
+
+	auto add_clause(std::vector<lit_type> const& clause)
+	{
+		return add_clause(clause.begin(), clause.end());
+	}
+
+	auto add_clause(lit_type lit)
+	{
+		return add_clause(std::vector<lit_type>{lit});
+	}
+
+	result get_model() const
+	{
+		assert(state_ == result::states::satisfiable);
+		result::model_type model;
+		for (auto i = 0u; i < num_variables() + 1; ++i) {
+			auto const value = sat_solver_get_var_value(solver_, i);
+			if (value == 0) {
+				model.emplace_back(lbool_type::true_);
+			} else if (value == 1) {
+				model.emplace_back(lbool_type::false_);
+			} else {
+				assert(value == 3);
+				model.emplace_back(lbool_type::undefined);
+			}
+		}
+		return result(model);
+	}
+
+	result get_core() const
+	{
+		assert(false && "yet not implemented");
+	}
+
+	result get_result() const
+	{
+		assert(state_ != result::states::dirty);
+		if (state_ == result::states::satisfiable) {
+			return get_model();
+		} else if (state_ == result::states::unsatisfiable) {
+			return get_core();
+		} else {
+			return result();
+		}
+	}
+
+	result::states solve(std::vector<lit_type> const& assumptions = {},
+	                     uint32_t conflict_limit = 0)
+	{
+		/* special case: empty solver state */
+		if (num_variables() == 0u)
+			return result::states::undefined;
+
+		int result;
+		if (assumptions.size() > 0u) {
+			/* solve with assumptions */
+			pabc::lit literals[2048];
+			uint32_t counter = 0u;
+			auto it = assumptions.begin();
+			while (it != assumptions.end()) {
+				literals[counter++] = pabc::Abc_Var2Lit(it->variable(),
+				                                        it->is_complemented());
+				++it;
+			}
+			result = pabc::sat_solver_solve(solver_, literals, literals + counter,
+			                                conflict_limit, 0, 0, 0);
+		} else {
+			/* solve without assumptions */
+			result = pabc::sat_solver_solve(solver_, 0, 0, conflict_limit, 0, 0, 0);
+		}
+
+		if (result == 1) {
+			state_ = result::states::satisfiable;
+		} else if (result == -1) {
+			state_ = result::states::unsatisfiable;
+		} else {
+			state_ = result::states::undefined;
+		}
+
+		return state_;
+	}
+#pragma endregion
+
+#pragma region Properties
+	uint32_t num_variables() const
+	{
+		return pabc::sat_solver_nvars(solver_);
+	}
+
+	uint32_t num_clauses() const
+	{
+		return pabc::sat_solver_nclauses(solver_);
+	}
+#pragma endregion
+
+private:
+	/*! \brief Backend solver */
+	solver_type* solver_ = nullptr;
+
+	/*! \brief Current state of the solver */
+	result::states state_ = result::states::undefined;
+};
 
 } // namespace bill

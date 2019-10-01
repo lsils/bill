@@ -7,7 +7,6 @@
 
 #include <bill/sat/solver.hpp>
 #include <bill/sat/tseytin.hpp>
-
 #include <iostream>
 #include <vector>
 
@@ -16,7 +15,9 @@ using namespace bill;
 #if defined(BILL_WINDOWS_PLATFORM)
 #define SOLVER_TYPES solver<solvers::ghack>
 #else
-#define SOLVER_TYPES solver<solvers::glucose_41>,solver<solvers::ghack>,solver<solvers::maple>
+#define SOLVER_TYPES                                                                 \
+	solver<solvers::glucose_41>, solver<solvers::ghack>, solver<solvers::maple>, \
+	    solver<solvers::bsat2>
 #endif
 
 TEMPLATE_TEST_CASE("Simple SAT", "[sat][template]", SOLVER_TYPES)
@@ -101,6 +102,7 @@ TEMPLATE_TEST_CASE("Model", "[sat][template]", SOLVER_TYPES)
 
 	m = solver.get_model();
 	model = m.model();
+
 	CHECK(model.at(t1.variable()) == lbool_type::true_);
 	CHECK(model.at(a.variable()) != model.at(b.variable()));
 
@@ -142,13 +144,12 @@ TEMPLATE_TEST_CASE("Restart", "[sat][template]", SOLVER_TYPES)
 	auto const t2 = add_tseytin_xor(solver, t0, t1);
 	solver.add_clause(t2);
 
-	CHECK(solver.solve() == result::states::unsatisfiable);
 	CHECK(solver.num_variables() == 5u);
-	CHECK(solver.num_clauses() == 8u);
+	CHECK(solver.num_clauses() == 10u);
+	CHECK(solver.solve() == result::states::unsatisfiable);
 
 	solver.restart();
 	CHECK(solver.solve() != result::states::unsatisfiable);
 	CHECK(solver.num_variables() == 0u);
 	CHECK(solver.num_clauses() == 0u);
 }
-
