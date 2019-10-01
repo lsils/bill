@@ -26,7 +26,13 @@
 #include "sat_solvers/ghack.hpp"
 #include "sat_solvers/glucose.hpp"
 #include "sat_solvers/maple.hpp"
+#if !defined(BILL_WINDOWS_PLATFORM)
+#define LIN64
+#define ABC_USE_NAMESPACE pabc
+#define ABC_NAMESPACE pabc
+#define ABC_USE_NO_READLINE
 #include "sat_solvers/abc.hpp"
+#endif
 #pragma GCC diagnostic pop
 #endif
 
@@ -592,6 +598,7 @@ private:
 };
 #endif
 
+#if !defined(BILL_WINDOWS_PLATFORM)
 template<>
 class solver<solvers::bsat2> {
 	using solver_type = pabc::sat_solver;
@@ -741,5 +748,6 @@ private:
 	/*! \brief Current state of the solver */
 	result::states state_ = result::states::undefined;
 };
+#endif
 
 } // namespace bill
