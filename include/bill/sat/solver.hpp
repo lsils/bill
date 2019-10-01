@@ -27,11 +27,12 @@
 #include "sat_solvers/glucose.hpp"
 #include "sat_solvers/maple.hpp"
 #define UNIX
-#ifdef UNIX
-#define LIN64
-#elif WIN32
+#if defined(BILL_WINDOWS_PLATFORM)
 #define NOMINMAX
+#else
+#define LIN64
 #endif
+#define ABC_USE_NAMESPACE pabc
 #define ABC_NAMESPACE pabc
 #define ABC_USE_NO_READLINE
 #include "sat_solvers/abc.hpp"
