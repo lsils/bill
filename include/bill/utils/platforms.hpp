@@ -7,3 +7,12 @@
 #if defined(WIN32) || defined(__WIN32__) || defined(_WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
 #define BILL_WINDOWS_PLATFORM
 #endif
+
+#if defined(BILL_WINDOWS_PLATFORM)
+#define NOMINMAX
+#else
+#define LIN64
+#endif
+#define ABC_USE_NAMESPACE pabc
+#define ABC_NAMESPACE pabc
+#define ABC_USE_NO_READLINE
