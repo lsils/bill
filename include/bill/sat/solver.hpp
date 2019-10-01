@@ -665,15 +665,12 @@ public:
 	{
 		assert(state_ == result::states::satisfiable);
 		result::model_type model;
-		for (auto i = 0u; i < num_variables() + 1; ++i) {
-			auto const value = sat_solver_get_var_value(solver_, i);
-			if (value == 0) {
+		for (auto i = 0u; i < num_variables(); ++i) {
+			auto const value = sat_solver_var_value(solver_, i);
+			if (value == 1) {
 				model.emplace_back(lbool_type::true_);
-			} else if (value == 1) {
-				model.emplace_back(lbool_type::false_);
 			} else {
-				assert(value == 3);
-				model.emplace_back(lbool_type::undefined);
+				model.emplace_back(lbool_type::false_);
 			}
 		}
 		return result(model);
