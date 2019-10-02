@@ -10,6 +10,8 @@ v0.1 (not yet released)
     - GHack (`solver<solvers::ghack>`)
     - Glucose 4.1 (`solver<solvers::glucose_41>`)
     - ABC bsat2 (`solver<solvers::bsat2>`)
+    - ABC bmcg (`solver<solvers::bmcg>`)
+    - ABC satoko (`solver<solvers::satoko>`)
 * Types:
     - Wrapper for variables (`var_type`)
     - Wrapper for literals (`lit_type`)
