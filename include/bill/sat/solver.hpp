@@ -701,7 +701,6 @@ public:
 			/* solve with assumptions */
 			uint32_t counter = 0u;
 			auto it = assumptions.begin();
-			counter = 0u;
 			while (it != assumptions.end()) {
 				literals[counter++] = pabc::Abc_Var2Lit(it->variable(),
 				                                        it->is_complemented());
@@ -745,7 +744,7 @@ private:
 	/*! \brief Current state of the solver */
 	result::states state_ = result::states::undefined;
 
-	/* temporary storage for one clause */
+	/*! \brief temporary storage for one clause */
 	pabc::lit literals[2048];
 };
 #endif
