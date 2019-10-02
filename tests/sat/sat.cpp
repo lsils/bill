@@ -17,7 +17,7 @@ using namespace bill;
 #else
 #define SOLVER_TYPES                                                                 \
 	solver<solvers::glucose_41>, solver<solvers::ghack>, solver<solvers::maple>, \
-	    solver<solvers::bsat2>
+          solver<solvers::bsat2>, solver<solvers::bmcg>
 #endif
 
 TEMPLATE_TEST_CASE("Simple SAT", "[sat][template]", SOLVER_TYPES)

@@ -18,8 +18,8 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 **************************************************************************************************/
 
 
-#ifndef Glucose_Alloc_h
-#define Glucose_Alloc_h
+#ifndef Abc_Glucose_Alloc_h
+#define Abc_Glucose_Alloc_h
 
 #include "XAlloc.h"
 #include "Vec.h"

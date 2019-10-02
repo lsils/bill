@@ -26,8 +26,8 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **************************************************************************************************/
 
-#ifndef Glucose_Solver_h
-#define Glucose_Solver_h
+#ifndef Abc_Glucose_Solver_h
+#define Abc_Glucose_Solver_h
 
 #include "Vec.h"
 #include "Heap.h"

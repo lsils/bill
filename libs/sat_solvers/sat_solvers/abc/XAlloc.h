@@ -18,8 +18,8 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 **************************************************************************************************/
 
 
-#ifndef Glucose_XAlloc_h
-#define Glucose_XAlloc_h
+#ifndef Abc_Glucose_XAlloc_h
+#define Abc_Glucose_XAlloc_h
 
 #include <errno.h>
 #include <stdlib.h>
