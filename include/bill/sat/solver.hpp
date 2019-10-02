@@ -610,6 +610,12 @@ public:
 		solver_ = pabc::sat_solver_new();
 	}
 
+	~solver()
+	{
+		pabc::sat_solver_delete(solver_);
+		solver_ = nullptr;
+	}
+
 	/* disallow copying */
 	solver(solver<solvers::bsat2> const&) = delete;
 	solver<solvers::bsat2>& operator=(const solver<solvers::bsat2>&) = delete;
@@ -618,8 +624,7 @@ public:
 #pragma region Modifiers
 	void restart()
 	{
-		pabc::sat_solver_delete(solver_);
-		solver_ = pabc::sat_solver_new();
+		pabc::sat_solver_restart(solver_);
 		state_ = result::states::undefined;
 	}
 
@@ -638,8 +643,7 @@ public:
 	auto add_clause(std::vector<lit_type>::const_iterator it,
 	                std::vector<lit_type>::const_iterator ie)
 	{
-		pabc::lit literals[2048];
-		uint32_t counter = 0u;
+		auto counter = 0u;
 		while (it != ie) {
 			literals[counter++] = pabc::Abc_Var2Lit(it->variable(),
 			                                        it->is_complemented());
@@ -675,18 +679,11 @@ public:
 		return result(model);
 	}
 
-	result get_core() const
-	{
-		assert(false && "yet not implemented");
-	}
-
 	result get_result() const
 	{
 		assert(state_ != result::states::dirty);
 		if (state_ == result::states::satisfiable) {
 			return get_model();
-		} else if (state_ == result::states::unsatisfiable) {
-			return get_core();
 		} else {
 			return result();
 		}
@@ -702,9 +699,9 @@ public:
 		int result;
 		if (assumptions.size() > 0u) {
 			/* solve with assumptions */
-			pabc::lit literals[2048];
 			uint32_t counter = 0u;
 			auto it = assumptions.begin();
+			counter = 0u;
 			while (it != assumptions.end()) {
 				literals[counter++] = pabc::Abc_Var2Lit(it->variable(),
 				                                        it->is_complemented());
@@ -747,6 +744,9 @@ private:
 
 	/*! \brief Current state of the solver */
 	result::states state_ = result::states::undefined;
+
+	/* temporary storage for one clause */
+	pabc::lit literals[2048];
 };
 #endif
 
