@@ -27,8 +27,8 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 **************************************************************************************************/
 
 
-#ifndef Glucose_SolverTypes_h
-#define Glucose_SolverTypes_h
+#ifndef Abc_Glucose_SolverTypes_h
+#define Abc_Glucose_SolverTypes_h
 
 #include <assert.h>
 
@@ -90,20 +90,16 @@ const Lit lit_Error = { -1 };  // }
 //       does enough constant propagation to produce sensible code, and this appears to be somewhat
 //       fragile unfortunately.
 
-#define l_True  (Gluco::lbool((uint8_t)0)) // gcc does not do constant propagation if these are real constants.
-#define l_False (Gluco::lbool((uint8_t)1))
-#define l_Undef (Gluco::lbool((uint8_t)2))
-
-class lbool {
+ class lbool {
     uint8_t value;
 
 public:
-    explicit lbool(uint8_t v) : value(v) { }
+    constexpr explicit lbool(uint8_t v) : value(v) { }
 
     lbool()       : value(0) { }
     explicit lbool(bool x) : value(!x) { }
 
-    bool  operator == (lbool b) const { return (((b.value&2) & (value&2)) | (!(b.value&2)&(value == b.value))) != 0; }
+    bool  operator == (lbool b) const { return ((b.value&2) & (value&2)) | (!(b.value&2)&(value == b.value)); }
     bool  operator != (lbool b) const { return !(*this == b); }
     lbool operator ^  (bool  b) const { return lbool((uint8_t)(value^(uint8_t)b)); }
 
@@ -122,6 +118,15 @@ public:
 };
 inline int   toInt  (lbool l) { return l.value; }
 inline lbool toLbool(int   v) { return lbool((uint8_t)v);  }
+
+constexpr auto l_True = Gluco::lbool((uint8_t)0);
+constexpr auto l_False = Gluco::lbool((uint8_t)1);
+constexpr auto l_Undef = Gluco::lbool((uint8_t)2);
+
+// #define l_True  (Gluco::lbool((uint8_t)0)) // gcc does not do constant propagation if these are real constants.
+// #define l_False (Gluco::lbool((uint8_t)1))
+// #define l_Undef (Gluco::lbool((uint8_t)2))
+
 
 //=================================================================================================
 // Clause -- a simple class for representing a clause:

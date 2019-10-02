@@ -18,8 +18,8 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **************************************************************************************************/
 
-#ifndef Glucose_Queue_h
-#define Glucose_Queue_h
+#ifndef Abc_Glucose_Queue_h
+#define Abc_Glucose_Queue_h
 
 #include "abc/Vec.h"
 

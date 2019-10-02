@@ -20,8 +20,8 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 **************************************************************************************************/
 
 
-#ifndef BoundedQueue_h
-#define BoundedQueue_h
+#ifndef Abc_BoundedQueue_h
+#define Abc_BoundedQueue_h
 
 #include "Vec.h"
 
