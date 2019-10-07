@@ -131,13 +131,13 @@ private:
 };
 
 enum class solvers {
-#if !defined(BILL_WINDOWS_PLATFORM)
 	glucose_41,
+	ghack,
+#if !defined(BILL_WINDOWS_PLATFORM)
 	maple,
 	bsat2,
 	bmcg,
 #endif
-	ghack,
 };
 
 template<solvers Solver = solvers::ghack>
