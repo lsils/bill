@@ -11,6 +11,7 @@
 #pragma warning( \
     disable : 4018 4127 4189 4200 4242 4244 4245 4305 4365 4388 4389 4456 4457 4459 4514 4552 4571 4583 4619 4623 4625 4626 4706 4710 4711 4774 4820 4820 4996 5026 5027 5039)
 #include "sat_solvers/ghack.hpp"
+#include "sat_solvers/glucose.hpp"
 #pragma warning(pop)
 #else
 #pragma GCC diagnostic push
@@ -130,19 +131,18 @@ private:
 };
 
 enum class solvers {
-#if !defined(BILL_WINDOWS_PLATFORM)
 	glucose_41,
+	ghack,
+#if !defined(BILL_WINDOWS_PLATFORM)
 	maple,
 	bsat2,
 	bmcg,
 #endif
-	ghack,
 };
 
 template<solvers Solver = solvers::ghack>
 class solver;
 
-#if !defined(BILL_WINDOWS_PLATFORM)
 template<>
 class solver<solvers::glucose_41> {
 	using solver_type = Glucose::Solver;
@@ -293,7 +293,6 @@ private:
 	/*! \brief Current state of the solver */
 	result::states state_ = result::states::undefined;
 };
-#endif
 
 template<>
 class solver<solvers::ghack> {
