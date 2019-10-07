@@ -3600,10 +3600,14 @@ inline Solver::~Solver() {
  Certified UNSAT proof in binary format
 ****************************************************************/
 
-
 inline void Solver::write_char(unsigned char ch) {
+#ifdef _WIN32
+    if(putc((int) ch, certifiedOutput) == EOF)
+        exit(1);
+#else
     if(putc_unlocked((int) ch, certifiedOutput) == EOF)
         exit(1);
+#endif
 }
 
 
