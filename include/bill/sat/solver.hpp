@@ -143,7 +143,6 @@ enum class solvers {
 template<solvers Solver = solvers::ghack>
 class solver;
 
-#if !defined(BILL_WINDOWS_PLATFORM)
 template<>
 class solver<solvers::glucose_41> {
 	using solver_type = Glucose::Solver;
@@ -294,7 +293,6 @@ private:
 	/*! \brief Current state of the solver */
 	result::states state_ = result::states::undefined;
 };
-#endif
 
 template<>
 class solver<solvers::ghack> {
