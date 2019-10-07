@@ -1764,7 +1764,10 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 namespace Glucose {
 
 static inline double cpuTime(void); // CPU-time in seconds.
+
+#ifndef _WIN32
 static inline double realTime(void);
+#endif
 extern double memUsed();            // Memory in mega bytes (returns 0 for unsupported architectures).
 extern double memUsedPeak();        // Peak-memory in mega bytes (returns 0 for unsupported architectures).
 
@@ -1790,12 +1793,13 @@ static inline double Glucose::cpuTime(void) {
 
 #endif
 
+#ifndef _WIN32
 // Laurent: I know that this will not compile directly under Windows... sorry for that
 static inline double Glucose::realTime() {
     struct timeval tv;
     gettimeofday(&tv, NULL);
     return (double)tv.tv_sec + (double) tv.tv_usec / 1000000; }
-
+#endif
 #endif
 /***************************************************************************************[SolverTypes.h]
  Glucose -- Copyright (c) 2009-2014, Gilles Audemard, Laurent Simon
@@ -1852,8 +1856,9 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 
 #include <assert.h>
 #include <stdint.h>
+#ifndef _WIN32
 #include <pthread.h>
-
+#endif
 
 
 
