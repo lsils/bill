@@ -50,7 +50,7 @@ ABC_NAMESPACE_IMPL_START
   SeeAlso     []
 
 ***********************************************************************/
-char * Sto_ManMemoryFetch( Sto_Man_t * p, int nBytes )
+inline char * Sto_ManMemoryFetch( Sto_Man_t * p, int nBytes )
 {
     char * pMem;
     if ( p->pChunkLast == NULL || nBytes > p->nChunkSize - p->nChunkUsed )
@@ -76,7 +76,7 @@ char * Sto_ManMemoryFetch( Sto_Man_t * p, int nBytes )
   SeeAlso     []
 
 ***********************************************************************/
-void Sto_ManMemoryStop( Sto_Man_t * p )
+inline void Sto_ManMemoryStop( Sto_Man_t * p )
 {
     char * pMem, * pNext;
     if ( p->pChunkLast == NULL )
@@ -97,7 +97,7 @@ void Sto_ManMemoryStop( Sto_Man_t * p )
   SeeAlso     []
 
 ***********************************************************************/
-int Sto_ManMemoryReport( Sto_Man_t * p )
+inline int Sto_ManMemoryReport( Sto_Man_t * p )
 {
     int Total;
     char * pMem, * pNext;
@@ -121,7 +121,7 @@ int Sto_ManMemoryReport( Sto_Man_t * p )
   SeeAlso     []
 
 ***********************************************************************/
-Sto_Man_t * Sto_ManAlloc()
+inline Sto_Man_t * Sto_ManAlloc()
 {
     Sto_Man_t * p;
     // allocate the manager
@@ -143,7 +143,7 @@ Sto_Man_t * Sto_ManAlloc()
   SeeAlso     []
 
 ***********************************************************************/
-void Sto_ManFree( Sto_Man_t * p )
+inline void Sto_ManFree( Sto_Man_t * p )
 {
     Sto_ManMemoryStop( p );
     ABC_FREE( p );
@@ -160,7 +160,7 @@ void Sto_ManFree( Sto_Man_t * p )
   SeeAlso     []
 
 ***********************************************************************/
-int Sto_ManAddClause( Sto_Man_t * p, lit * pBeg, lit * pEnd )
+inline int Sto_ManAddClause( Sto_Man_t * p, lit * pBeg, lit * pEnd )
 {
     Sto_Cls_t * pClause;
     lit Lit, * i, * j;
@@ -235,7 +235,7 @@ int Sto_ManAddClause( Sto_Man_t * p, lit * pBeg, lit * pEnd )
   SeeAlso     []
 
 ***********************************************************************/
-void Sto_ManMarkRoots( Sto_Man_t * p )
+inline void Sto_ManMarkRoots( Sto_Man_t * p )
 {
     Sto_Cls_t * pClause;
     p->nRoots = 0;
@@ -257,7 +257,7 @@ void Sto_ManMarkRoots( Sto_Man_t * p )
   SeeAlso     []
 
 ***********************************************************************/
-void Sto_ManMarkClausesA( Sto_Man_t * p )
+inline void Sto_ManMarkClausesA( Sto_Man_t * p )
 {
     Sto_Cls_t * pClause;
     p->nClausesA = 0;
@@ -279,7 +279,7 @@ void Sto_ManMarkClausesA( Sto_Man_t * p )
   SeeAlso     []
 
 ***********************************************************************/
-int Sto_ManChangeLastClause( Sto_Man_t * p )
+inline int Sto_ManChangeLastClause( Sto_Man_t * p )
 {
     Sto_Cls_t * pClause, * pPrev;
     pPrev = NULL;
@@ -305,7 +305,7 @@ int Sto_ManChangeLastClause( Sto_Man_t * p )
   SeeAlso     []
 
 ***********************************************************************/
-void Sto_ManDumpClauses( Sto_Man_t * p, char * pFileName )
+inline void Sto_ManDumpClauses( Sto_Man_t * p, char * pFileName )
 {
     FILE * pFile;
     Sto_Cls_t * pClause;
@@ -340,7 +340,7 @@ void Sto_ManDumpClauses( Sto_Man_t * p, char * pFileName )
   SeeAlso     []
 
 ***********************************************************************/
-int Sto_ManLoadNumber( FILE * pFile, int * pNumber )
+inline int Sto_ManLoadNumber( FILE * pFile, int * pNumber )
 {
     int Char, Number = 0, Sign = 0;
     // skip space-like chars
@@ -384,7 +384,7 @@ int Sto_ManLoadNumber( FILE * pFile, int * pNumber )
   SeeAlso     []
 
 ***********************************************************************/
-Sto_Man_t * Sto_ManLoadClauses( char * pFileName )
+inline Sto_Man_t * Sto_ManLoadClauses( char * pFileName )
 {
     FILE * pFile;
     Sto_Man_t * p;
@@ -522,7 +522,7 @@ ABC_NAMESPACE_IMPL_START
   SeeAlso     []
 
 ***********************************************************************/
-void Abc_MergeSortCostMerge( int * p1Beg, int * p1End, int * p2Beg, int * p2End, int * pOut )
+inline void Abc_MergeSortCostMerge( int * p1Beg, int * p1End, int * p2Beg, int * p2End, int * pOut )
 {
     int nEntries = (p1End - p1Beg) + (p2End - p2Beg);
     int * pOutBeg = pOut;
@@ -553,7 +553,7 @@ void Abc_MergeSortCostMerge( int * p1Beg, int * p1End, int * p2Beg, int * p2End,
   SeeAlso     []
 
 ***********************************************************************/
-void Abc_MergeSortCost_rec( int * pInBeg, int * pInEnd, int * pOutBeg )
+inline void Abc_MergeSortCost_rec( int * pInBeg, int * pInEnd, int * pOutBeg )
 {
     int nSize = (pInEnd - pInBeg)/2;
     assert( nSize > 0 );
@@ -608,7 +608,7 @@ void Abc_MergeSortCost_rec( int * pInBeg, int * pInEnd, int * pOutBeg )
   SeeAlso     []
 
 ***********************************************************************/
-int * Abc_MergeSortCost( int * pCosts, int nSize )
+inline int * Abc_MergeSortCost( int * pCosts, int nSize )
 {
     int i, * pResult, * pInput, * pOutput;
     pResult = (int *) calloc( sizeof(int), nSize );
@@ -706,7 +706,7 @@ static inline void    solver2_clear_tags(sat_solver* s, int start)    {
     veci_resize(&s->tagged,start);
 }
 
-int sat_solver_get_var_value(sat_solver* s, int v)
+inline int sat_solver_get_var_value(sat_solver* s, int v)
 {
     if ( var_value(s, v) == var0 )
         return l_False;
@@ -806,7 +806,7 @@ static inline int  order_select(sat_solver* s, float random_var_freq) // selectv
     return var_Undef;
 }
 
-void sat_solver_set_var_activity(sat_solver* s, int * pVars, int nVars) 
+inline void sat_solver_set_var_activity(sat_solver* s, int * pVars, int nVars) 
 {
     int i;
     assert( s->VarActType == 1 );
@@ -824,7 +824,7 @@ void sat_solver_set_var_activity(sat_solver* s, int * pVars, int nVars)
 //=================================================================================================
 // variable activities
 
-void solver_init_activities(sat_solver* s)  
+inline void solver_init_activities(sat_solver* s)  
 {
     // variable activities
     if ( s->VarActType == 0 )
@@ -1102,7 +1102,7 @@ static inline int sat_clause_compute_lbd( sat_solver* s, clause* c )
 
 /* pre: size > 1 && no variable occurs twice
  */
-int sat_solver_clause_new(sat_solver* s, lit* begin, lit* end, int learnt)
+inline int sat_solver_clause_new(sat_solver* s, lit* begin, lit* end, int learnt)
 {
     int fUseBinaryClauses = 1;
     int size;
@@ -1313,7 +1313,7 @@ static void sat_solver_record(sat_solver* s, veci* cls)
 */
 }
 
-int sat_solver_count_assigned(sat_solver* s)
+inline int sat_solver_count_assigned(sat_solver* s)
 {
     // count top-level assignments
     int i, Count = 0;
@@ -1588,7 +1588,7 @@ static void sat_solver_analyze(sat_solver* s, int h, veci* learnt)
 
 //#define TEST_CNF_LOAD
 
-int sat_solver_propagate(sat_solver* s)
+inline int sat_solver_propagate(sat_solver* s)
 {
     int     hConfl = 0;
     lit*    lits;
@@ -1706,7 +1706,7 @@ int sat_solver_propagate(sat_solver* s)
 //=================================================================================================
 // External solver functions:
 
-sat_solver* sat_solver_new(void)
+inline sat_solver* sat_solver_new(void)
 {
     sat_solver* s = (sat_solver*)ABC_CALLOC( char, sizeof(sat_solver));
 
@@ -1770,7 +1770,7 @@ sat_solver* sat_solver_new(void)
     return s;
 }
 
-sat_solver* zsat_solver_new_seed(double seed)
+inline sat_solver* zsat_solver_new_seed(double seed)
 {
     sat_solver* s = (sat_solver*)ABC_CALLOC( char, sizeof(sat_solver));
 
@@ -1835,12 +1835,12 @@ sat_solver* zsat_solver_new_seed(double seed)
     return s;
 }
 
-int sat_solver_addvar(sat_solver* s)
+inline int sat_solver_addvar(sat_solver* s)
 {
     sat_solver_setnvars(s, s->size+1);
     return s->size-1;
 }
-void sat_solver_setnvars(sat_solver* s,int n)
+inline void sat_solver_setnvars(sat_solver* s,int n)
 {
     int var;
 
@@ -1909,7 +1909,7 @@ void sat_solver_setnvars(sat_solver* s,int n)
     s->size = n > s->size ? n : s->size;
 }
 
-void sat_solver_delete(sat_solver* s)
+inline void sat_solver_delete(sat_solver* s)
 {
 //    Vec_SetFree_( &s->Mem );
     Sat_MemFree_( &s->Mem );
@@ -1957,7 +1957,7 @@ void sat_solver_delete(sat_solver* s)
     ABC_FREE(s);
 }
 
-void sat_solver_restart( sat_solver* s )
+inline void sat_solver_restart( sat_solver* s )
 {
     int i;
     Sat_MemRestart( &s->Mem );
@@ -2002,7 +2002,7 @@ void sat_solver_restart( sat_solver* s )
     s->stats.tot_literals     = 0;
 }
 
-void zsat_solver_restart_seed( sat_solver* s, double seed )
+inline void zsat_solver_restart_seed( sat_solver* s, double seed )
 {
     int i;
     Sat_MemRestart( &s->Mem );
@@ -2046,7 +2046,7 @@ void zsat_solver_restart_seed( sat_solver* s, double seed )
 }
 
 // returns memory in bytes used by the SAT solver
-double sat_solver_memory( sat_solver* s )
+inline double sat_solver_memory( sat_solver* s )
 {
     int i;
     double Mem = sizeof(sat_solver);
@@ -2082,7 +2082,7 @@ double sat_solver_memory( sat_solver* s )
     return Mem;
 }
 
-int sat_solver_simplify(sat_solver* s)
+inline int sat_solver_simplify(sat_solver* s)
 {
     assert(sat_solver_dl(s) == 0);
     if (sat_solver_propagate(s) != 0)
@@ -2090,7 +2090,7 @@ int sat_solver_simplify(sat_solver* s)
     return true;
 }
 
-void sat_solver_reducedb(sat_solver* s)
+inline void sat_solver_reducedb(sat_solver* s)
 {
     static abctime TimeTotal = 0;
     abctime clk = Abc_Clock();
@@ -2204,7 +2204,7 @@ void sat_solver_reducedb(sat_solver* s)
 
 
 // reverses to the previously bookmarked point
-void sat_solver_rollback( sat_solver* s )
+inline void sat_solver_rollback( sat_solver* s )
 {
     Sat_Mem_t * pMem = &s->Mem;
     int i, k, j;
@@ -2294,8 +2294,7 @@ void sat_solver_rollback( sat_solver* s )
     }
 }
 
-
-int sat_solver_addclause(sat_solver* s, lit* begin, lit* end)
+inline int sat_solver_addclause(sat_solver* s, lit* begin, lit* end)
 {
     lit *i,*j;
     int maxvar;
@@ -2357,7 +2356,7 @@ int sat_solver_addclause(sat_solver* s, lit* begin, lit* end)
     return true;
 }
 
-double luby(double y, int x)
+inline double luby(double y, int x)
 {
     int size, seq;
     for (size = 1, seq = 0; size < x+1; seq++, size = 2*size + 1);
@@ -2369,7 +2368,7 @@ double luby(double y, int x)
     return pow(y, (double)seq);
 } 
 
-void luby_test()
+inline void luby_test()
 {
     int i;
     for ( i = 0; i < 20; i++ )
@@ -2502,7 +2501,7 @@ static lbool sat_solver_search(sat_solver* s, ABC_INT64_T nof_conflicts)
 }
 
 // internal call to the SAT solver
-int sat_solver_solve_internal(sat_solver* s)
+inline int sat_solver_solve_internal(sat_solver* s)
 {
     lbool status = l_Undef;
     int restart_iter = 0;
@@ -2562,7 +2561,7 @@ int sat_solver_solve_internal(sat_solver* s)
 }
 
 // pushing one assumption to the stack of assumptions
-int sat_solver_push(sat_solver* s, int p)
+inline int sat_solver_push(sat_solver* s, int p)
 {
     assert(lit_var(p) < s->size);
     veci_push(&s->trail_lim,s->qtail);
@@ -2605,13 +2604,13 @@ int sat_solver_push(sat_solver* s, int p)
 }
 
 // removing one assumption from the stack of assumptions
-void sat_solver_pop(sat_solver* s)
+inline void sat_solver_pop(sat_solver* s)
 {
     assert( sat_solver_dl(s) > 0 );
     sat_solver_canceluntil(s, --s->root_level);
 }
 
-void sat_solver_set_resource_limits(sat_solver* s, ABC_INT64_T nConfLimit, ABC_INT64_T nInsLimit, ABC_INT64_T nConfLimitGlobal, ABC_INT64_T nInsLimitGlobal)
+inline void sat_solver_set_resource_limits(sat_solver* s, ABC_INT64_T nConfLimit, ABC_INT64_T nInsLimit, ABC_INT64_T nConfLimitGlobal, ABC_INT64_T nInsLimitGlobal)
 {
     // set the external limits
     s->nRestarts  = 0;
@@ -2628,7 +2627,7 @@ void sat_solver_set_resource_limits(sat_solver* s, ABC_INT64_T nConfLimit, ABC_I
         s->nInsLimit = nInsLimitGlobal;
 }
 
-int sat_solver_solve(sat_solver* s, lit* begin, lit* end, ABC_INT64_T nConfLimit, ABC_INT64_T nInsLimit, ABC_INT64_T nConfLimitGlobal, ABC_INT64_T nInsLimitGlobal)
+inline int sat_solver_solve(sat_solver* s, lit* begin, lit* end, ABC_INT64_T nConfLimit, ABC_INT64_T nInsLimit, ABC_INT64_T nConfLimitGlobal, ABC_INT64_T nInsLimitGlobal)
 {
     lbool status;
     lit * i;
@@ -2703,7 +2702,7 @@ int sat_solver_solve(sat_solver* s, lit* begin, lit* end, ABC_INT64_T nConfLimit
 // (It assumes that there is no smaller assignment than the one given!)
 // The resulting assignment is returned in the same set of literals (pLits, nLits).
 // It pushes/pops assumptions internally and will undo them before terminating.
-int sat_solver_solve_lexsat( sat_solver* s, int * pLits, int nLits )
+inline int sat_solver_solve_lexsat( sat_solver* s, int * pLits, int nLits )
 {
     int i, iLitFail = -1;
     lbool status;
@@ -2769,7 +2768,7 @@ int sat_solver_solve_lexsat( sat_solver* s, int * pLits, int nLits )
 // The procedure relies on the fact that the current set of assumptions is UNSAT.  
 // It receives and returns SAT solver without assumptions. It returns the number 
 // of assumptions after minimization. The set of assumptions is returned in pLits.
-int sat_solver_minimize_assumptions( sat_solver* s, int * pLits, int nLits, int nConfLimit )
+inline int sat_solver_minimize_assumptions( sat_solver* s, int * pLits, int nLits, int nConfLimit )
 {
     int i, k, nLitsL, nLitsR, nResL, nResR, status;
     if ( nLits == 1 )
@@ -2844,7 +2843,7 @@ int sat_solver_minimize_assumptions( sat_solver* s, int * pLits, int nLits, int 
 // - makes sure that at least one of the marked literals is preserved in the clause
 // - sets literals to zero when they do not have to be used
 // - sets literals to zero for disproved variables
-int sat_solver_minimize_assumptions2( sat_solver* s, int * pLits, int nLits, int nConfLimit )
+inline int sat_solver_minimize_assumptions2( sat_solver* s, int * pLits, int nLits, int nConfLimit )
 {
     int i, k, nLitsL, nLitsR, nResL, nResR;
     if ( nLits == 1 )
@@ -2929,19 +2928,19 @@ int sat_solver_minimize_assumptions2( sat_solver* s, int * pLits, int nLits, int
 
 
 
-int sat_solver_nvars(sat_solver* s)
+inline int sat_solver_nvars(sat_solver* s)
 {
     return s->size;
 }
 
 
-int sat_solver_nclauses(sat_solver* s)
+inline int sat_solver_nclauses(sat_solver* s)
 {
     return s->stats.clauses;
 }
 
 
-int sat_solver_nconflicts(sat_solver* s)
+inline int sat_solver_nconflicts(sat_solver* s)
 {
     return (int)s->stats.conflicts;
 }
@@ -2949,40 +2948,40 @@ int sat_solver_nconflicts(sat_solver* s)
 //=================================================================================================
 // Clause storage functions:
 
-void sat_solver_store_alloc( sat_solver * s )
+inline void sat_solver_store_alloc( sat_solver * s )
 {
     assert( s->pStore == NULL );
     s->pStore = Sto_ManAlloc();
 }
 
-void sat_solver_store_write( sat_solver * s, char * pFileName )
+inline void sat_solver_store_write( sat_solver * s, char * pFileName )
 {
     if ( s->pStore ) Sto_ManDumpClauses( (Sto_Man_t *)s->pStore, pFileName );
 }
 
-void sat_solver_store_free( sat_solver * s )
+inline void sat_solver_store_free( sat_solver * s )
 {
     if ( s->pStore ) Sto_ManFree( (Sto_Man_t *)s->pStore );
     s->pStore = NULL;
 }
 
-int sat_solver_store_change_last( sat_solver * s )
+inline int sat_solver_store_change_last( sat_solver * s )
 {
     if ( s->pStore ) return Sto_ManChangeLastClause( (Sto_Man_t *)s->pStore );
     return -1;
 }
  
-void sat_solver_store_mark_roots( sat_solver * s )
+inline void sat_solver_store_mark_roots( sat_solver * s )
 {
     if ( s->pStore ) Sto_ManMarkRoots( (Sto_Man_t *)s->pStore );
 }
 
-void sat_solver_store_mark_clauses_a( sat_solver * s )
+inline void sat_solver_store_mark_clauses_a( sat_solver * s )
 {
     if ( s->pStore ) Sto_ManMarkClausesA( (Sto_Man_t *)s->pStore );
 }
 
-void * sat_solver_store_release( sat_solver * s )
+inline void * sat_solver_store_release( sat_solver * s )
 {
     void * pTemp;
     if ( s->pStore == NULL )
@@ -3035,7 +3034,7 @@ static const char* _cat = "SIMP";
 // Constructor/Destructor:
 
 
-SimpSolver::SimpSolver() :
+inline SimpSolver::SimpSolver() :
     grow               (0)
   , clause_lim         (20)
   , subsumption_lim    (1000)
@@ -3061,12 +3060,12 @@ SimpSolver::SimpSolver() :
 }
 
 
-SimpSolver::~SimpSolver()
+inline SimpSolver::~SimpSolver()
 {
 }
 
 
-Var SimpSolver::newVar(bool sign, bool dvar) {
+inline Var SimpSolver::newVar(bool sign, bool dvar) {
     Var v = Solver::newVar(sign, dvar);
 
     frozen    .push((char)false);
@@ -3083,7 +3082,7 @@ Var SimpSolver::newVar(bool sign, bool dvar) {
 
 
 
-lbool SimpSolver::solve_(bool do_simp, bool turn_off_simp)
+inline lbool SimpSolver::solve_(bool do_simp, bool turn_off_simp)
 {
     vec<Var> extra_frozen;
     lbool    result = l_True;
@@ -3125,7 +3124,7 @@ lbool SimpSolver::solve_(bool do_simp, bool turn_off_simp)
 
 
 
-bool SimpSolver::addClause_(vec<Lit>& ps)
+inline bool SimpSolver::addClause_(vec<Lit>& ps)
 {
 #ifndef NDEBUG
     for (int i = 0; i < ps.size(); i++)
@@ -3164,7 +3163,7 @@ bool SimpSolver::addClause_(vec<Lit>& ps)
 }
 
 
-void SimpSolver::removeClause(CRef cr)
+inline void SimpSolver::removeClause(CRef cr)
 {
     const Clause& c = ca[cr];
 
@@ -3179,7 +3178,7 @@ void SimpSolver::removeClause(CRef cr)
 }
 
 
-bool SimpSolver::strengthenClause(CRef cr, Lit l)
+inline bool SimpSolver::strengthenClause(CRef cr, Lit l)
 {
     Clause& c = ca[cr];
     assert(decisionLevel() == 0);
@@ -3219,7 +3218,7 @@ bool SimpSolver::strengthenClause(CRef cr, Lit l)
 
 
 // Returns FALSE if clause is always satisfied ('out_clause' should not be used).
-bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, vec<Lit>& out_clause)
+inline bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, vec<Lit>& out_clause)
 {
     merges++;
     out_clause.clear();
@@ -3252,7 +3251,7 @@ bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, vec<Lit>& ou
 
 
 // Returns FALSE if clause is always satisfied.
-bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, int& size)
+inline bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, int& size)
 {
     merges++;
 
@@ -3282,7 +3281,7 @@ bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, int& size)
 }
 
 
-void SimpSolver::gatherTouchedClauses()
+inline void SimpSolver::gatherTouchedClauses()
 {
     if (n_touched == 0) return;
 
@@ -3310,7 +3309,7 @@ void SimpSolver::gatherTouchedClauses()
 }
 
 
-bool SimpSolver::implied(const vec<Lit>& c)
+inline bool SimpSolver::implied(const vec<Lit>& c)
 {
     assert(decisionLevel() == 0);
 
@@ -3331,7 +3330,7 @@ bool SimpSolver::implied(const vec<Lit>& c)
 
 
 // Backward subsumption + backward subsumption resolution
-bool SimpSolver::backwardSubsumptionCheck(bool verbose)
+inline bool SimpSolver::backwardSubsumptionCheck(bool verbose)
 {
     int cnt = 0;
     int subsumed = 0;
@@ -3398,7 +3397,7 @@ bool SimpSolver::backwardSubsumptionCheck(bool verbose)
 }
 
 
-bool SimpSolver::asymm(Var v, CRef cr)
+inline bool SimpSolver::asymm(Var v, CRef cr)
 {
     Clause& c = ca[cr];
     assert(decisionLevel() == 0);
@@ -3425,7 +3424,7 @@ bool SimpSolver::asymm(Var v, CRef cr)
 }
 
 
-bool SimpSolver::asymmVar(Var v)
+inline bool SimpSolver::asymmVar(Var v)
 {
     assert(use_simplification);
 
@@ -3475,7 +3474,7 @@ static void mkElimClause(vec<uint32_t>& elimclauses, Var v, Clause& c)
 
 
 
-bool SimpSolver::eliminateVar(Var v)
+inline bool SimpSolver::eliminateVar(Var v)
 {
     int i, j;
     assert(!frozen[v]);
@@ -3540,7 +3539,7 @@ bool SimpSolver::eliminateVar(Var v)
 }
 
 
-bool SimpSolver::substitute(Var v, Lit x)
+inline bool SimpSolver::substitute(Var v, Lit x)
 {
     assert(!frozen[v]);
     assert(!isEliminated(v));
@@ -3574,7 +3573,7 @@ bool SimpSolver::substitute(Var v, Lit x)
 }
 
 
-void SimpSolver::extendModel()
+inline void SimpSolver::extendModel()
 {
     int i, j;
     Lit x;
@@ -3591,7 +3590,7 @@ void SimpSolver::extendModel()
 }
 
 
-bool SimpSolver::eliminate(bool turn_off_elim)
+inline bool SimpSolver::eliminate(bool turn_off_elim)
 {
     //abctime clk = Abc_Clock();
     if (!simplify())
@@ -3683,7 +3682,7 @@ bool SimpSolver::eliminate(bool turn_off_elim)
 }
 
 
-void SimpSolver::cleanUpClauses()
+inline void SimpSolver::cleanUpClauses()
 {
     occurs.cleanAll();
     int i,j;
@@ -3698,7 +3697,7 @@ void SimpSolver::cleanUpClauses()
 // Garbage Collection methods:
 
 
-void SimpSolver::relocAll(ClauseAllocator& to)
+inline void SimpSolver::relocAll(ClauseAllocator& to)
 {
     int i;
     if (!use_simplification) return;
@@ -3722,7 +3721,7 @@ void SimpSolver::relocAll(ClauseAllocator& to)
 }
 
 
-void SimpSolver::garbageCollect()
+inline void SimpSolver::garbageCollect()
 {
     // Initialize the next region to a size corresponding to the estimated utilization degree. This
     // is not precise but should avoid some unnecessary reallocations for the new region:
@@ -3738,7 +3737,7 @@ void SimpSolver::garbageCollect()
     to.moveTo(ca);
 }
 
-void SimpSolver::reset() 
+inline void SimpSolver::reset() 
 {
     Solver::reset();
     grow = 0;
@@ -3848,7 +3847,7 @@ namespace Gluco {
 // Constructor/Destructor:
 
 
-Solver::Solver() :
+inline Solver::Solver() :
 
     // Parameters (user settable):
     //
@@ -3931,7 +3930,7 @@ Solver::Solver() :
 }
 
 
-Solver::~Solver()
+inline Solver::~Solver()
 {
 }
 
@@ -3943,12 +3942,12 @@ Solver::~Solver()
 // This function set the incremental mode to true.
 // You can add special code for this mode here.
 
-void Solver::setIncrementalMode() {
+inline void Solver::setIncrementalMode() {
   incremental = true;
 }
 
 // Number of variables without selectors
-void Solver::initNbInitialVars(int nb) {
+inline void Solver::initNbInitialVars(int nb) {
   nbVarsInitialFormula = nb;
 }
 
@@ -3960,7 +3959,7 @@ void Solver::initNbInitialVars(int nb) {
 // Creates a new SAT variable in the solver. If 'decision' is cleared, variable will not be
 // used as a decision variable (NOTE! This has effects on the meaning of a SATISFIABLE result).
 //
-Var Solver::newVar(bool sign, bool dvar)
+inline Var Solver::newVar(bool sign, bool dvar)
 {
     int v = nVars();
     watches  .init(mkLit(v, false));
@@ -3982,7 +3981,7 @@ Var Solver::newVar(bool sign, bool dvar)
 
 
 
-bool Solver::addClause_(vec<Lit>& ps)
+inline bool Solver::addClause_(vec<Lit>& ps)
 {
     assert(decisionLevel() == 0);
     if (!ok) return false;
@@ -4047,7 +4046,7 @@ bool Solver::addClause_(vec<Lit>& ps)
 }
 
 
-void Solver::attachClause(CRef cr) {
+inline void Solver::attachClause(CRef cr) {
     const Clause& c = ca[cr];
 
     assert(c.size() > 1);
@@ -4064,7 +4063,7 @@ void Solver::attachClause(CRef cr) {
 
 
 
-void Solver::detachClause(CRef cr, bool strict) {
+inline void Solver::detachClause(CRef cr, bool strict) {
     const Clause& c = ca[cr];
     
     assert(c.size() > 1);
@@ -4091,7 +4090,7 @@ void Solver::detachClause(CRef cr, bool strict) {
     else            clauses_literals -= c.size(); }
 
 
-void Solver::removeClause(CRef cr) {
+inline void Solver::removeClause(CRef cr) {
 
   Clause& c = ca[cr];
 
@@ -4110,7 +4109,7 @@ void Solver::removeClause(CRef cr) {
 }
 
 
-bool Solver::satisfied(const Clause& c) const {
+inline bool Solver::satisfied(const Clause& c) const {
   if(incremental)  // Check clauses with many selectors is too time consuming
     return (value(c[0]) == l_True) || (value(c[1]) == l_True);
 
@@ -4187,7 +4186,7 @@ inline unsigned int Solver::computeLBD(const Clause &c) {
 /******************************************************************
  * Minimisation with binary reolution
  ******************************************************************/
-void Solver::minimisationWithBinaryResolution(vec<Lit> &out_learnt) {
+inline void Solver::minimisationWithBinaryResolution(vec<Lit> &out_learnt) {
   
   // Find the LBD measure                                                                                                         
   unsigned int lbd = computeLBD(out_learnt);
@@ -4229,7 +4228,7 @@ void Solver::minimisationWithBinaryResolution(vec<Lit> &out_learnt) {
 
 // Revert to the state at given level (keeping all assignment at 'level' but not beyond).
 //
-void Solver::cancelUntil(int level) {
+inline void Solver::cancelUntil(int level) {
     if (decisionLevel() > level){
         for (int c = trail.size()-1; c >= trail_lim[level]; c--){
             Var      x  = var(trail[c]);
@@ -4248,7 +4247,7 @@ void Solver::cancelUntil(int level) {
 // Major methods:
 
 
-Lit Solver::pickBranchLit()
+inline Lit Solver::pickBranchLit()
 {
     Var next = var_Undef;
 
@@ -4287,7 +4286,7 @@ Lit Solver::pickBranchLit()
 |        rest of literals. There may be others from the same level though.
 |  
 |________________________________________________________________________________________________@*/
-void Solver::analyze(CRef confl, vec<Lit>& out_learnt,vec<Lit>&selectors, int& out_btlevel,unsigned int &lbd,unsigned int &szWithoutSelectors)
+inline void Solver::analyze(CRef confl, vec<Lit>& out_learnt,vec<Lit>&selectors, int& out_btlevel,unsigned int &lbd,unsigned int &szWithoutSelectors)
 {
     int pathC = 0;
     Lit p     = lit_Undef;
@@ -4464,7 +4463,7 @@ void Solver::analyze(CRef confl, vec<Lit>& out_learnt,vec<Lit>&selectors, int& o
 
 // Check if 'p' can be removed. 'abstract_levels' is used to abort early if the algorithm is
 // visiting literals at levels that cannot be removed later.
-bool Solver::litRedundant(Lit p, uint32_t abstract_levels)
+inline bool Solver::litRedundant(Lit p, uint32_t abstract_levels)
 {
     analyze_stack.clear(); analyze_stack.push(p);
     int top = analyze_toclear.size();
@@ -4507,7 +4506,7 @@ bool Solver::litRedundant(Lit p, uint32_t abstract_levels)
 |    Calculates the (possibly empty) set of assumptions that led to the assignment of 'p', and
 |    stores the result in 'out_conflict'.
 |________________________________________________________________________________________________@*/
-void Solver::analyzeFinal(Lit p, vec<Lit>& out_conflict)
+inline void Solver::analyzeFinal(Lit p, vec<Lit>& out_conflict)
 {
     out_conflict.clear();
     out_conflict.push(p);
@@ -4541,7 +4540,7 @@ void Solver::analyzeFinal(Lit p, vec<Lit>& out_conflict)
 }
 
 
-void Solver::uncheckedEnqueue(Lit p, CRef from)
+inline void Solver::uncheckedEnqueue(Lit p, CRef from)
 {
     assert(value(p) == l_Undef);
     assigns[var(p)] = lbool(!sign(p));
@@ -4561,7 +4560,7 @@ void Solver::uncheckedEnqueue(Lit p, CRef from)
 |    Post-conditions:
 |      * the propagation queue is empty, even if there was a conflict.
 |________________________________________________________________________________________________@*/
-CRef Solver::propagate()
+inline CRef Solver::propagate()
 {
     CRef    confl     = CRef_Undef;
     int     num_props = 0;
@@ -4693,7 +4692,7 @@ struct reduceDB_lt {
     }    
 };
 
-void Solver::reduceDB()
+inline void Solver::reduceDB()
 { 
   int i, j;
   nbReduceDB++;
@@ -4725,7 +4724,7 @@ void Solver::reduceDB()
 }
 
 
-void Solver::removeSatisfied(vec<CRef>& cs)
+inline void Solver::removeSatisfied(vec<CRef>& cs)
 {
     int i, j;
     for (i = j = 0; i < cs.size(); i++){
@@ -4739,7 +4738,7 @@ void Solver::removeSatisfied(vec<CRef>& cs)
 }
 
 
-void Solver::rebuildOrderHeap()
+inline void Solver::rebuildOrderHeap()
 {
     vec<Var> vs;
     for (Var v = 0; v < nVars(); v++)
@@ -4757,7 +4756,7 @@ void Solver::rebuildOrderHeap()
 |    Simplify the clause database according to the current top-level assigment. Currently, the only
 |    thing done here is the removal of satisfied clauses, but more things can be put here.
 |________________________________________________________________________________________________@*/
-bool Solver::simplify()
+inline bool Solver::simplify()
 {
     assert(decisionLevel() == 0);
 
@@ -4796,7 +4795,7 @@ bool Solver::simplify()
 |    all variables are decision variables, this means that the clause set is satisfiable. 'l_False'
 |    if the clause set is unsatisfiable. 'l_Undef' if the bound on number of conflicts is reached.
 |________________________________________________________________________________________________@*/
-lbool Solver::search(int nof_conflicts)
+inline lbool Solver::search(int nof_conflicts)
 {
     assert(ok);
     int         backtrack_level;
@@ -4930,7 +4929,7 @@ lbool Solver::search(int nof_conflicts)
 }
 
 
-double Solver::progressEstimate() const
+inline double Solver::progressEstimate() const
 {
     double  progress = 0;
     double  F = 1.0 / nVars();
@@ -4944,7 +4943,7 @@ double Solver::progressEstimate() const
     return progress / nVars();
 }
 
-void Solver::printIncrementalStats() {
+inline void Solver::printIncrementalStats() {
 
   printf("c---------- Glucose Stats -------------------------\n");
   printf("c restarts              : %ld\n", starts);
@@ -4967,7 +4966,7 @@ void Solver::printIncrementalStats() {
 
 
 // NOTE: assumptions passed in member-variable 'assumptions'.
-lbool Solver::solve_()
+inline lbool Solver::solve_()
 {
 
   if(incremental && certifiedUNSAT) {
@@ -5077,8 +5076,7 @@ static Var mapVar(Var x, vec<Var>& map, Var& max)
     return map[x];
 }
 
-
-void Solver::toDimacs(FILE* f, Clause& c, vec<Var>& map, Var& max)
+inline void Solver::toDimacs(FILE* f, Clause& c, vec<Var>& map, Var& max)
 {
     if (satisfied(c)) return;
 
@@ -5089,7 +5087,7 @@ void Solver::toDimacs(FILE* f, Clause& c, vec<Var>& map, Var& max)
 }
 
 
-void Solver::toDimacs(const char *file, const vec<Lit>& assumps)
+inline void Solver::toDimacs(const char *file, const vec<Lit>& assumps)
 {
     FILE* f = fopen(file, "wr");
     if (f == NULL)
@@ -5099,7 +5097,7 @@ void Solver::toDimacs(const char *file, const vec<Lit>& assumps)
 }
 
 
-void Solver::toDimacs(FILE* f, const vec<Lit>& assumps)
+inline void Solver::toDimacs(FILE* f, const vec<Lit>& assumps)
 {
     // Handle case when solver is in contradictory state:
     if (!ok){
@@ -5144,7 +5142,7 @@ void Solver::toDimacs(FILE* f, const vec<Lit>& assumps)
 //=================================================================================================
 // Garbage Collection methods:
 
-void Solver::relocAll(ClauseAllocator& to)
+inline void Solver::relocAll(ClauseAllocator& to)
 {
     int v, s, i, j;
     // All watchers:
@@ -5185,7 +5183,7 @@ void Solver::relocAll(ClauseAllocator& to)
 }
 
 
-void Solver::garbageCollect()
+inline void Solver::garbageCollect()
 {
     // Initialize the next region to a size corresponding to the estimated utilization degree. This
     // is not precise but should avoid some unnecessary reallocations for the new region:
@@ -5198,7 +5196,7 @@ void Solver::garbageCollect()
     to.moveTo(ca);
 }
 
-void Solver::reset() 
+inline void Solver::reset() 
 {
     // Reset everything
     ok = true;
@@ -5319,24 +5317,24 @@ ABC_NAMESPACE_IMPL_START
   SeeAlso     []
 
 ***********************************************************************/
-Gluco::SimpSolver * glucose_solver_start()
+inline Gluco::SimpSolver * glucose_solver_start()
 {
     Gluco::SimpSolver * S = new Gluco::SimpSolver;
     S->setIncrementalMode();
     return S;
 }
 
-void glucose_solver_stop(Gluco::SimpSolver* S)
+inline void glucose_solver_stop(Gluco::SimpSolver* S)
 {
     delete S;
 }
 
-void glucose_solver_reset(Gluco::SimpSolver* S)
+inline void glucose_solver_reset(Gluco::SimpSolver* S)
 {
     S->reset();
 }
 
-int glucose_solver_addclause(Gluco::SimpSolver* S, int * plits, int nlits)
+inline int glucose_solver_addclause(Gluco::SimpSolver* S, int * plits, int nlits)
 {
     Gluco::vec<Gluco::Lit> lits;
     for ( int i = 0; i < nlits; i++,plits++)
@@ -5351,14 +5349,14 @@ int glucose_solver_addclause(Gluco::SimpSolver* S, int * plits, int nlits)
     return S->addClause(lits); // returns 0 if the problem is UNSAT
 }
 
-void glucose_solver_setcallback(Gluco::SimpSolver* S, void * pman, int(*pfunc)(void*, int, int*))
+inline void glucose_solver_setcallback(Gluco::SimpSolver* S, void * pman, int(*pfunc)(void*, int, int*))
 {
     S->pCnfMan = pman;
     S->pCnfFunc = pfunc;
     S->nCallConfl = 1000;
 }
 
-int glucose_solver_solve(Gluco::SimpSolver* S, int * plits, int nlits)
+inline int glucose_solver_solve(Gluco::SimpSolver* S, int * plits, int nlits)
 {
     Gluco::vec<Gluco::Lit> lits;
     for (int i=0;i<nlits;i++,plits++)
@@ -5371,18 +5369,18 @@ int glucose_solver_solve(Gluco::SimpSolver* S, int * plits, int nlits)
     return (res == Gluco::l_True ? 1 : res == Gluco::l_False ? -1 : 0);
 }
 
-int glucose_solver_addvar(Gluco::SimpSolver* S)
+inline int glucose_solver_addvar(Gluco::SimpSolver* S)
 {
     S->newVar();
     return S->nVars() - 1;
 }
 
-int glucose_solver_read_cex_varvalue(Gluco::SimpSolver* S, int ivar)
+inline int glucose_solver_read_cex_varvalue(Gluco::SimpSolver* S, int ivar)
 {
     return S->model[ivar] == Gluco::l_True;
 }
 
-void glucose_solver_setstop(Gluco::SimpSolver* S, int * pstop)
+inline void glucose_solver_setstop(Gluco::SimpSolver* S, int * pstop)
 {
     S->pstop = pstop;
 }
@@ -5399,94 +5397,94 @@ void glucose_solver_setstop(Gluco::SimpSolver* S, int * pstop)
   SeeAlso     []
 
 ***********************************************************************/
-bmcg_sat_solver * bmcg_sat_solver_start() 
+inline bmcg_sat_solver * bmcg_sat_solver_start() 
 {
     return (bmcg_sat_solver *)glucose_solver_start();
 }
-void bmcg_sat_solver_stop(bmcg_sat_solver* s)
+inline void bmcg_sat_solver_stop(bmcg_sat_solver* s)
 {
     glucose_solver_stop((Gluco::SimpSolver*)s);
 }
-void bmcg_sat_solver_reset(bmcg_sat_solver* s)
+inline void bmcg_sat_solver_reset(bmcg_sat_solver* s)
 {
     glucose_solver_reset((Gluco::SimpSolver*)s);
 }
 
 
-int bmcg_sat_solver_addclause(bmcg_sat_solver* s, int * plits, int nlits)
+inline int bmcg_sat_solver_addclause(bmcg_sat_solver* s, int * plits, int nlits)
 {
     return glucose_solver_addclause((Gluco::SimpSolver*)s,plits,nlits);
 }
 
-void bmcg_sat_solver_setcallback(bmcg_sat_solver* s, void * pman, int(*pfunc)(void*, int, int*))
+inline void bmcg_sat_solver_setcallback(bmcg_sat_solver* s, void * pman, int(*pfunc)(void*, int, int*))
 {
     glucose_solver_setcallback((Gluco::SimpSolver*)s,pman,pfunc);
 }
 
-int bmcg_sat_solver_solve(bmcg_sat_solver* s, int * plits, int nlits)
+inline int bmcg_sat_solver_solve(bmcg_sat_solver* s, int * plits, int nlits)
 {
     return glucose_solver_solve((Gluco::SimpSolver*)s,plits,nlits);
 }
 
-int bmcg_sat_solver_final(bmcg_sat_solver* s, int ** ppArray)
+inline int bmcg_sat_solver_final(bmcg_sat_solver* s, int ** ppArray)
 {
     *ppArray = (int *)(Gluco::Lit *)((Gluco::SimpSolver*)s)->conflict;
     return ((Gluco::SimpSolver*)s)->conflict.size();
 }
 
-int bmcg_sat_solver_addvar(bmcg_sat_solver* s)
+inline int bmcg_sat_solver_addvar(bmcg_sat_solver* s)
 {
     return glucose_solver_addvar((Gluco::SimpSolver*)s);
 }
 
-void bmcg_sat_solver_set_nvars( bmcg_sat_solver* s, int nvars )
+inline void bmcg_sat_solver_set_nvars( bmcg_sat_solver* s, int nvars )
 {
     int i;
     for ( i = bmcg_sat_solver_varnum(s); i < nvars; i++ )
         bmcg_sat_solver_addvar(s);
 }
 
-int bmcg_sat_solver_eliminate( bmcg_sat_solver* s, int turn_off_elim )
+inline int bmcg_sat_solver_eliminate( bmcg_sat_solver* s, int turn_off_elim )
 {
 //    return 1; 
     return ((Gluco::SimpSolver*)s)->eliminate(turn_off_elim != 0);
 }
 
-int bmcg_sat_solver_var_is_elim( bmcg_sat_solver* s, int v )
+inline int bmcg_sat_solver_var_is_elim( bmcg_sat_solver* s, int v )
 {
 //    return 0; 
     return ((Gluco::SimpSolver*)s)->isEliminated(v);
 }
 
-void bmcg_sat_solver_var_set_frozen( bmcg_sat_solver* s, int v, int freeze )
+inline void bmcg_sat_solver_var_set_frozen( bmcg_sat_solver* s, int v, int freeze )
 {
     ((Gluco::SimpSolver*)s)->setFrozen(v, freeze != 0);
 }
 
-int bmcg_sat_solver_elim_varnum(bmcg_sat_solver* s)
+inline int bmcg_sat_solver_elim_varnum(bmcg_sat_solver* s)
 {
 //    return 0; 
     return ((Gluco::SimpSolver*)s)->eliminated_vars;
 }
 
-int bmcg_sat_solver_read_cex_varvalue(bmcg_sat_solver* s, int ivar)
+inline int bmcg_sat_solver_read_cex_varvalue(bmcg_sat_solver* s, int ivar)
 {
     return glucose_solver_read_cex_varvalue((Gluco::SimpSolver*)s, ivar);
 }
 
-void bmcg_sat_solver_set_stop(bmcg_sat_solver* s, int * pstop)
+inline void bmcg_sat_solver_set_stop(bmcg_sat_solver* s, int * pstop)
 {
     glucose_solver_setstop((Gluco::SimpSolver*)s, pstop);
 }
 
-abctime bmcg_sat_solver_set_runtime_limit(bmcg_sat_solver* s, abctime Limit)
+inline abctime bmcg_sat_solver_set_runtime_limit(bmcg_sat_solver* s, abctime Limit)
 {
     abctime nRuntimeLimit = ((Gluco::SimpSolver*)s)->nRuntimeLimit;
     ((Gluco::SimpSolver*)s)->nRuntimeLimit = Limit;
     return nRuntimeLimit;
 }
 
-void bmcg_sat_solver_set_conflict_budget(bmcg_sat_solver* s, int Limit)
+inline void bmcg_sat_solver_set_conflict_budget(bmcg_sat_solver* s, int Limit)
 {
     if ( Limit > 0 ) 
         ((Gluco::SimpSolver*)s)->setConfBudget( (int64_t)Limit );
@@ -5494,24 +5492,24 @@ void bmcg_sat_solver_set_conflict_budget(bmcg_sat_solver* s, int Limit)
         ((Gluco::SimpSolver*)s)->budgetOff();
 }
 
-int bmcg_sat_solver_varnum(bmcg_sat_solver* s)
+inline int bmcg_sat_solver_varnum(bmcg_sat_solver* s)
 {
     return ((Gluco::SimpSolver*)s)->nVars();
 }
-int bmcg_sat_solver_clausenum(bmcg_sat_solver* s)
+inline int bmcg_sat_solver_clausenum(bmcg_sat_solver* s)
 {
     return ((Gluco::SimpSolver*)s)->nClauses();
 }
-int bmcg_sat_solver_learntnum(bmcg_sat_solver* s)
+inline int bmcg_sat_solver_learntnum(bmcg_sat_solver* s)
 {
     return ((Gluco::SimpSolver*)s)->nLearnts();
 }
-int bmcg_sat_solver_conflictnum(bmcg_sat_solver* s)
+inline int bmcg_sat_solver_conflictnum(bmcg_sat_solver* s)
 {
     return ((Gluco::SimpSolver*)s)->conflicts;
 }
 
-int bmcg_sat_solver_minimize_assumptions( bmcg_sat_solver * s, int * plits, int nlits, int pivot )
+inline int bmcg_sat_solver_minimize_assumptions( bmcg_sat_solver * s, int * plits, int nlits, int pivot )
 {
     Gluco::vec<int>*array = &((Gluco::SimpSolver*)s)->user_vec;
     int i, nlitsL, nlitsR, nresL, nresR, status;
@@ -5555,7 +5553,7 @@ int bmcg_sat_solver_minimize_assumptions( bmcg_sat_solver * s, int * plits, int 
     return nresL + nresR;
 }
 
-int bmcg_sat_solver_add_and( bmcg_sat_solver * s, int iVar, int iVar0, int iVar1, int fCompl0, int fCompl1, int fCompl )
+inline int bmcg_sat_solver_add_and( bmcg_sat_solver * s, int iVar, int iVar0, int iVar1, int fCompl0, int fCompl1, int fCompl )
 {
     int Lits[3];
 
@@ -5591,19 +5589,19 @@ int bmcg_sat_solver_add_and( bmcg_sat_solver * s, int iVar, int iVar0, int iVar1
   SeeAlso     []
 
 ***********************************************************************/
-Gluco::Solver * glucose_solver_start()
+inline Gluco::Solver * glucose_solver_start()
 {
     Gluco::Solver * S = new Gluco::Solver;
     S->setIncrementalMode();
     return S;
 }
 
-void glucose_solver_stop(Gluco::Solver* S)
+inline void glucose_solver_stop(Gluco::Solver* S)
 {
     delete S;
 }
 
-int glucose_solver_addclause(Gluco::Solver* S, int * plits, int nlits)
+inline int glucose_solver_addclause(Gluco::Solver* S, int * plits, int nlits)
 {
     Gluco::vec<Gluco::Lit> lits;
     for ( int i = 0; i < nlits; i++,plits++)
@@ -5618,14 +5616,14 @@ int glucose_solver_addclause(Gluco::Solver* S, int * plits, int nlits)
     return S->addClause(lits); // returns 0 if the problem is UNSAT
 }
 
-void glucose_solver_setcallback(Gluco::Solver* S, void * pman, int(*pfunc)(void*, int, int*))
+inline void glucose_solver_setcallback(Gluco::Solver* S, void * pman, int(*pfunc)(void*, int, int*))
 {
     S->pCnfMan = pman;
     S->pCnfFunc = pfunc;
     S->nCallConfl = 1000;
 }
 
-int glucose_solver_solve(Gluco::Solver* S, int * plits, int nlits)
+inline int glucose_solver_solve(Gluco::Solver* S, int * plits, int nlits)
 {
     vec<Lit> lits;
     for (int i=0;i<nlits;i++,plits++)
@@ -5638,18 +5636,18 @@ int glucose_solver_solve(Gluco::Solver* S, int * plits, int nlits)
     return (res == l_True ? 1 : res == l_False ? -1 : 0);
 }
 
-int glucose_solver_addvar(Gluco::Solver* S)
+inline int glucose_solver_addvar(Gluco::Solver* S)
 {
     S->newVar();
     return S->nVars() - 1;
 }
 
-int glucose_solver_read_cex_varvalue(Gluco::Solver* S, int ivar)
+inline int glucose_solver_read_cex_varvalue(Gluco::Solver* S, int ivar)
 {
     return S->model[ivar] == l_True;
 }
 
-void glucose_solver_setstop(Gluco::Solver* S, int * pstop)
+inline void glucose_solver_setstop(Gluco::Solver* S, int * pstop)
 {
     S->pstop = pstop;
 }
@@ -5666,89 +5664,89 @@ void glucose_solver_setstop(Gluco::Solver* S, int * pstop)
   SeeAlso     []
 
 ***********************************************************************/
-bmcg_sat_solver * bmcg_sat_solver_start() 
+inline bmcg_sat_solver * bmcg_sat_solver_start() 
 {
     return (bmcg_sat_solver *)glucose_solver_start();
 }
-void bmcg_sat_solver_stop(bmcg_sat_solver* s)
+inline void bmcg_sat_solver_stop(bmcg_sat_solver* s)
 {
     glucose_solver_stop((Gluco::Solver*)s);
 }
 
-int bmcg_sat_solver_addclause(bmcg_sat_solver* s, int * plits, int nlits)
+inline int bmcg_sat_solver_addclause(bmcg_sat_solver* s, int * plits, int nlits)
 {
     return glucose_solver_addclause((Gluco::Solver*)s,plits,nlits);
 }
 
-void bmcg_sat_solver_setcallback(bmcg_sat_solver* s, void * pman, int(*pfunc)(void*, int, int*))
+inline void bmcg_sat_solver_setcallback(bmcg_sat_solver* s, void * pman, int(*pfunc)(void*, int, int*))
 {
     glucose_solver_setcallback((Gluco::Solver*)s,pman,pfunc);
 }
 
-int bmcg_sat_solver_solve(bmcg_sat_solver* s, int * plits, int nlits)
+inline int bmcg_sat_solver_solve(bmcg_sat_solver* s, int * plits, int nlits)
 {
     return glucose_solver_solve((Gluco::Solver*)s,plits,nlits);
 }
 
-int bmcg_sat_solver_final(bmcg_sat_solver* s, int ** ppArray)
+inline int bmcg_sat_solver_final(bmcg_sat_solver* s, int ** ppArray)
 {
     *ppArray = (int *)(Lit *)((Gluco::Solver*)s)->conflict;
     return ((Gluco::Solver*)s)->conflict.size();
 }
 
-int bmcg_sat_solver_addvar(bmcg_sat_solver* s)
+inline int bmcg_sat_solver_addvar(bmcg_sat_solver* s)
 {
     return glucose_solver_addvar((Gluco::Solver*)s);
 }
 
-void bmcg_sat_solver_set_nvars( bmcg_sat_solver* s, int nvars )
+inline void bmcg_sat_solver_set_nvars( bmcg_sat_solver* s, int nvars )
 {
     int i;
     for ( i = bmcg_sat_solver_varnum(s); i < nvars; i++ )
         bmcg_sat_solver_addvar(s);
 }
 
-int bmcg_sat_solver_eliminate( bmcg_sat_solver* s, int turn_off_elim )
+inline int bmcg_sat_solver_eliminate( bmcg_sat_solver* s, int turn_off_elim )
 {
     return 1; 
 //    return ((Gluco::SimpSolver*)s)->eliminate(turn_off_elim != 0);
 }
 
-int bmcg_sat_solver_var_is_elim( bmcg_sat_solver* s, int v )
+inline int bmcg_sat_solver_var_is_elim( bmcg_sat_solver* s, int v )
 {
     return 0; 
 //    return ((Gluco::SimpSolver*)s)->isEliminated(v);
 }
 
-void bmcg_sat_solver_var_set_frozen( bmcg_sat_solver* s, int v, int freeze )
+inline void bmcg_sat_solver_var_set_frozen( bmcg_sat_solver* s, int v, int freeze )
 {
 //    ((Gluco::SimpSolver*)s)->setFrozen(v, freeze);
 }
 
-int bmcg_sat_solver_elim_varnum(bmcg_sat_solver* s)
+inline int bmcg_sat_solver_elim_varnum(bmcg_sat_solver* s)
 {
     return 0;
 //    return ((Gluco::SimpSolver*)s)->eliminated_vars;
 }
 
-int bmcg_sat_solver_read_cex_varvalue(bmcg_sat_solver* s, int ivar)
+inline int bmcg_sat_solver_read_cex_varvalue(bmcg_sat_solver* s, int ivar)
 {
     return glucose_solver_read_cex_varvalue((Gluco::Solver*)s, ivar);
 }
 
-void bmcg_sat_solver_set_stop(bmcg_sat_solver* s, int * pstop)
+inline void bmcg_sat_solver_set_stop(bmcg_sat_solver* s, int * pstop)
 {
     glucose_solver_setstop((Gluco::Solver*)s, pstop);
 }
 
-abctime bmcg_sat_solver_set_runtime_limit(bmcg_sat_solver* s, abctime Limit)
+inline abctime bmcg_sat_solver_set_runtime_limit(bmcg_sat_solver* s, abctime Limit)
 {
     abctime nRuntimeLimit = ((Gluco::Solver*)s)->nRuntimeLimit;
     ((Gluco::Solver*)s)->nRuntimeLimit = Limit;
     return nRuntimeLimit;
 }
 
-void bmcg_sat_solver_set_conflict_budget(bmcg_sat_solver* s, int Limit)
+inline void bmcg_sat_solver_set_conflict_budget(bmcg_sat_solver* s, int Limit)
 {
     if ( Limit > 0 ) 
         ((Gluco::Solver*)s)->setConfBudget( (int64_t)Limit );
@@ -5756,24 +5754,24 @@ void bmcg_sat_solver_set_conflict_budget(bmcg_sat_solver* s, int Limit)
         ((Gluco::Solver*)s)->budgetOff();
 }
 
-int bmcg_sat_solver_varnum(bmcg_sat_solver* s)
+inline int bmcg_sat_solver_varnum(bmcg_sat_solver* s)
 {
     return ((Gluco::Solver*)s)->nVars();
 }
-int bmcg_sat_solver_clausenum(bmcg_sat_solver* s)
+inline int bmcg_sat_solver_clausenum(bmcg_sat_solver* s)
 {
     return ((Gluco::Solver*)s)->nClauses();
 }
-int bmcg_sat_solver_learntnum(bmcg_sat_solver* s)
+inline int bmcg_sat_solver_learntnum(bmcg_sat_solver* s)
 {
     return ((Gluco::Solver*)s)->nLearnts();
 }
-int bmcg_sat_solver_conflictnum(bmcg_sat_solver* s)
+inline int bmcg_sat_solver_conflictnum(bmcg_sat_solver* s)
 {
     return ((Gluco::Solver*)s)->conflicts;
 }
 
-int bmcg_sat_solver_minimize_assumptions( bmcg_sat_solver * s, int * plits, int nlits, int pivot )
+inline int bmcg_sat_solver_minimize_assumptions( bmcg_sat_solver * s, int * plits, int nlits, int pivot )
 {
     vec<int>*array = &((Gluco::Solver*)s)->user_vec;
     int i, nlitsL, nlitsR, nresL, nresR, status;
@@ -5831,7 +5829,7 @@ int bmcg_sat_solver_minimize_assumptions( bmcg_sat_solver * s, int * plits, int 
   SeeAlso     []
 
 ***********************************************************************/
-void glucose_print_stats(Gluco::SimpSolver& s, abctime clk)
+inline void glucose_print_stats(Gluco::SimpSolver& s, abctime clk)
 {
     double cpu_time = (double)(unsigned)clk / CLOCKS_PER_SEC;
     printf("c restarts              : %d (%d conflicts on average)\n",         (int)s.starts, s.starts > 0 ? (int)(s.conflicts/s.starts) : 0);
