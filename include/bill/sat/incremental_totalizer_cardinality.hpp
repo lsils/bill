@@ -29,22 +29,24 @@ inline void create_totalizer_internal(Solver& solver, std::vector<std::vector<li
                                       std::vector<lit_type> const& av,
                                       std::vector<lit_type> const& bv)
 {
+	(void) solver;
+
 	/* i = 0 */
 	uint32_t kmin = std::min(rhs, uint32_t(bv.size()));
-	for (auto j = 0; j < kmin; ++j) {
+	for (auto j = 0u; j < kmin; ++j) {
 		dest.emplace_back(std::vector{~bv[j], ov[j]});
 	}
 
 	/* j = 0 */
 	kmin = std::min(rhs, uint32_t(av.size()));
-	for (auto i = 0; i < kmin; ++i) {
+	for (auto i = 0u; i < kmin; ++i) {
 		dest.emplace_back(std::vector{~av[i], ov[i]});
 	}
 
 	/* i, j > 0 */
-	for (auto i = 1; i <= kmin; ++i) {
+	for (auto i = 1u; i <= kmin; ++i) {
 		auto const min_j = std::min(rhs - i, uint32_t(bv.size()));
-		for (auto j = 1; j <= min_j; ++j) {
+		for (auto j = 1u; j <= min_j; ++j) {
 			dest.emplace_back(std::vector{~av[i - 1], ~bv[j - 1], ov[i + j - 1]});
 		}
 	}
@@ -74,9 +76,9 @@ inline void increase_totalizer_internal(Solver& solver, std::vector<std::vector<
 	}
 
 	/* i, j > 0 */
-	for (auto i = 1; i <= max_i; ++i) {
+	for (auto i = 1u; i <= max_i; ++i) {
 		auto const max_j = std::min(rhs - i, uint32_t(bv.size()));
-		auto const min_j = std::max(int(last) - int(i) + 1, 1);
+		auto const min_j = uint32_t(std::max(int(last) - int(i) + 1, 1));
 		for (auto j = min_j; j <= max_j; ++j) {
 			dest.emplace_back(std::vector{~av[i - 1], ~bv[j - 1], ov[i + j - 1]});
 		}
@@ -94,7 +96,7 @@ inline std::shared_ptr<totalizer_tree> create_totalizer(Solver& solver,
 	auto const n = lhs.size();
 
 	std::deque<std::shared_ptr<totalizer_tree>> queue;
-	for (auto i = 0; i < n; ++i) {
+	for (auto i = 0u; i < n; ++i) {
 		auto t = std::make_shared<totalizer_tree>();
 		t->vars.resize(1, lit_type(lhs[i].variable(), lhs[i].polarity()));
 		t->num_inputs = 1;
@@ -115,7 +117,7 @@ inline std::shared_ptr<totalizer_tree> create_totalizer(Solver& solver,
 
 		uint32_t kmin = std::min(rhs + 1, t->num_inputs);
 		t->vars.resize(kmin, lit_type(var_type(0), negative_polarity));
-		for (auto i = 0; i < kmin; ++i) {
+		for (auto i = 0u; i < kmin; ++i) {
 			t->vars[i] = lit_type(solver.add_variable(), positive_polarity);
 		}
 		detail::create_totalizer_internal(solver, dest, t->vars, kmin, le->vars, ri->vars);
@@ -157,7 +159,7 @@ inline std::shared_ptr<totalizer_tree> merge_totalizer(Solver& solver,
 	t->right = tb;
 
 	t->vars.resize(kmin, lit_type(var_type(0), negative_polarity));
-	for (auto i = 0; i < kmin; ++i) {
+	for (auto i = 0u; i < kmin; ++i) {
 		t->vars[i] = lit_type(solver.add_variable(), positive_polarity);
 	}
 
