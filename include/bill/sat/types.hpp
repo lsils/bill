@@ -12,10 +12,10 @@ namespace bill {
 
 /*! \brief Wrapper class to represent variables.
  *
- * A variable is an element of a convenient set.  They are often identified by symbols such as
+ * A variable is an element of a convenient set.  They are often identified by symbols such as 
  * x1, x2, ..., xn; of course, any other symbol can also be used, e.g., a, b, c.  In code, however,
  * we use unsigned numerals 1, 2, 3, ..., n that stand for variables.
- *
+ * 
  * Because of its relation to literals (see below), using `uint32_t` to hold variable identifiers
  * limits the number of possibles variables to 2^31 - 1 = 2,147,483,647.
  */
