@@ -22,7 +22,7 @@
 
 ***********************************************************************/
 
-#include <abc/satStore.h>
+#include "abc/satStore.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -475,8 +475,8 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 **************************************************************************************************/
 // Modified to compile with MS Visual Studio 6.0 by Alan Mishchenko
 
-#include <abc/satSolver.h>
-#include <abc/satStore.h>
+#include "abc/satSolver.h"
+#include "abc/satStore.h"
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
@@ -2981,9 +2981,9 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **************************************************************************************************/
 
-#include <abc/SimpSolver.h>
-#include <abc/Sort.h>
-#include <abc/system.h>
+#include "abc/SimpSolver.h"
+#include "abc/Sort.h"
+#include "abc/system.h"
 
 ABC_NAMESPACE_IMPL_START
 
@@ -5341,11 +5341,11 @@ ABC_NAMESPACE_IMPL_END
 
 ***********************************************************************/
 
-#include <abc/AbcGlucose.h>
-#include <abc/Dimacs.h>
-#include <abc/SimpSolver.h>
-#include <abc/abc_global.h>
-#include <abc/system.h>
+#include "abc/AbcGlucose.h"
+#include "abc/Dimacs.h"
+#include "abc/SimpSolver.h"
+#include "abc/abc_global.h"
+#include "abc/system.h"
 
 ABC_NAMESPACE_IMPL_START
 

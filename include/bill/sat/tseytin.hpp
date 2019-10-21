@@ -4,6 +4,8 @@
 *------------------------------------------------------------------------------------------------*/
 #pragma once
 
+#include "interface/types.hpp"
+
 namespace bill {
 
 template<typename Solver>

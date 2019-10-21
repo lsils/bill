@@ -21,7 +21,7 @@
 #ifndef ABC__sat__Xdbl__Xdbl_h
 #define ABC__sat__Xdbl__Xdbl_h
 
-#include <abc/abc_global.h>
+#include "abc_global.h"
 
 ABC_NAMESPACE_HEADER_START
 

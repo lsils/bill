@@ -21,7 +21,7 @@
 #ifndef ABC_SAT_GLUCOSE_H_
 #define ABC_SAT_GLUCOSE_H_
 
-#include "abc/abc_global.h"
+#include "abc_global.h"
 
 ////////////////////////////////////////////////////////////////////////
 ///                          INCLUDES                                ///
