@@ -72,6 +72,7 @@ public:
 	explicit zdd_base(uint32_t num_vars, uint32_t log_num_objs = 16)
 	    : unique_tables_(num_vars)
 	    , num_variables(num_vars)
+	    . built_tautologies(false)
 	    , num_cache_lookups(0)
 	    , num_cache_misses(0)
 	{
@@ -200,6 +201,7 @@ public:
 			assert(last == 2 * unique_tables_.size() + 1u - v);
 		}
 		ref(last);
+		built_tautologies = true;
 	}
 
 	/*! \brief Increase the reference count of a node. */
@@ -251,16 +253,7 @@ public:
 
 #pragma region ZDD Operations
 public:
-	/* \!brief TODO  */
-	node_index tautology(uint32_t var = 0) const
-	{
-		if (var == unique_tables_.size()) {
-			return top();
-		}
-		return 2 * unique_tables_.size() + 1u - var;
-	}
-
-	/* \!brief TODO  */
+	/* \!brief Computes the family of all ``k``-combinations of a ZDD.  */
 	node_index choose(node_index index_f, uint32_t k)
 	{
 		if (k == 1) {
@@ -465,6 +458,18 @@ public:
 		return computed_tables_[operations::zdd_nonsupersets][{index_f, index_g}] = index_new;
 	}
 
+	/* \!brief Return the tautology function ``f(var) = true`` 
+	 *  Important: the function ``build_tautologies`` must have been called.
+	 */
+	node_index tautology(uint32_t var = 0) const
+	{
+		assert(built_tautologies);
+		if (var == unique_tables_.size()) {
+			return top();
+		}
+		return 2 * unique_tables_.size() + 1u - var;
+	}
+
 	/* \!brief Computes the union of two ZDDs */
 	node_index union_(node_index index_f, node_index index_g)
 	{
@@ -630,6 +635,8 @@ private:
 	std::stack<node_index> free_nodes_;
 	std::vector<unique_table_type> unique_tables_;
 	std::array<unique_table_type, operations::num_operations> computed_tables_;
+
+	bool built_tautologies = false;
 
 	// Stats
 	uint32_t num_variables;
