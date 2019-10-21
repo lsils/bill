@@ -331,33 +331,6 @@ public:
 		return computed_tables_[operations::zdd_difference][{index_f, index_g}] = index_new;
 	}
 
-	/* \!brief TODO */
-	node_index edivide(node_index index_f, node_index index_g)
-	{
-		node_type const& node_f = nodes_.at(index_f);
-		node_type const& node_g = nodes_.at(index_g);
-		if (node_f.var == node_g.var) {
-			return node_f.hi;
-		}
-		if (node_f.var > node_g.var) {
-			return 0;
-		}
-
-		// Unique table lookup
-		++num_cache_lookups;
-		const auto it = computed_tables_[operations::zdd_edivide].find({index_f, index_g});
-		if (it != computed_tables_[operations::zdd_edivide].end()) {
-			assert(!nodes_.at(it->second).dead);
-			return it->second;
-		}
-		++num_cache_misses;
-
-		node_index r_lo = edivide(node_f.lo, index_g);
-		node_index r_hi = edivide(node_f.hi, index_g);
-		node_index index_new = unique(node_f.var, r_lo, r_hi);
-		return computed_tables_[operations::zdd_edivide][{index_f, index_g}] = index_new;
-	}
-
 	/* \!brief Computes the intersection of two ZDDs */
 	node_index intersection(node_index index_f, node_index index_g)
 	{

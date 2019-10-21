@@ -1,5 +1,5 @@
 ZDD
-====
+===
 
 A zero-suppressed decision diagram (ZDD) is a graph-based representation of a
 finite family of finite subsets. Given a set of variables
@@ -27,13 +27,13 @@ in the package.
 +--------------------------------+----------+
 | Difference                     | |diff|   |
 +--------------------------------+----------+
-| EDivide                        |          |
-+--------------------------------+----------+
 | Intersection                   | |inter|  |
 +--------------------------------+----------+
 | Join                           | |join|   |
 +--------------------------------+----------+
 | Nonsupersets                   | |nonsup| |
++--------------------------------+----------+
+| Tautology                      |          |
 +--------------------------------+----------+
 | Union                          | |union|  |
 +--------------------------------+----------+
