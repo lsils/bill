@@ -196,7 +196,7 @@ public:
 	{
 		assert(nodes_.size() == unique_tables_.size() + 2u);
 		node_index last = top();
-		for (auto v = unique_tables_.size() - 1; v >= 0; --v) {
+		for (int v = unique_tables_.size() - 1; v >= 0; --v) {
 			last = unique(v, last, last);
 			assert(last == 2 * unique_tables_.size() + 1u - v);
 		}
