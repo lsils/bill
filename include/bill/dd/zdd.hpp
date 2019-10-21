@@ -289,7 +289,7 @@ public:
 	}
 
 	/* \!brief Computes the difference of two ZDDs (`f / g`)
-	 *  Keep in mind that `f / g` is differente from `g / f` !
+	 *  Keep in mind that `f / g` is different from `g / f` !
 	 */
 	node_index difference(node_index index_f, node_index index_g)
 	{
