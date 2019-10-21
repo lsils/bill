@@ -11,6 +11,12 @@ Welcome to bill's documentation!
 
    changelog
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Decision diagrams
+
+   dd/zdd
+
 Indices and tables
 ==================
 

@@ -1,13 +1,16 @@
 /*-------------------------------------------------------------------------------------------------
 | This file is distributed under the MIT License.
 | See accompanying file /LICENSE for details.
-| Author(s): Mathias Soeken
 *------------------------------------------------------------------------------------------------*/
 #pragma once
 
+#include "../utils/hash.hpp"
+
 #include <algorithm>
+#include <array>
+#include <cassert>
 #include <cstdint>
-#include <iomanip>
+#include <fmt/format.h>
 #include <iostream>
 #include <sstream>
 #include <stack>
@@ -17,11 +20,22 @@
 
 namespace bill {
 
-// TODO: refactor, document
+/*! \brief A zero-suppressed decision diagram (ZDD).
+ *
+ *  NOTE: This is a simple implementation. I would advise against its use when high-performance
+ *        is a requirement.
+ * 
+ *  Limitations:
+ *  	- Maximum number of varibales `N_max` is: 4095 [(1 << 12) - 1]
+ *  	- The number of variables `N` must be known at instantiation time. 
+ * 
+ * Variables are numbered from `0` to `N - 1`.
+ */
 class zdd_base {
+#pragma region Types and constructors
 private:
-	struct node_t {
-		node_t(uint32_t var, uint32_t lo, uint32_t hi)
+	struct node_type {
+		node_type(uint32_t var, uint32_t lo, uint32_t hi)
 		    : var(var)
 		    , ref(0)
 		    , dead(0)
@@ -36,45 +50,140 @@ private:
 		uint64_t hi : 20;
 	};
 
-	enum op_t {
-		zdd_union,
-		zdd_intersection,
+	enum operations : uint32_t {
+		zdd_choose,
 		zdd_difference,
+		zdd_edivide,
+		zdd_intersection,
 		zdd_join,
 		zdd_nonsupersets,
-		zdd_edivide,
-		zdd_sym,
-		zdd_choose
+		zdd_union,
+		num_operations
 	};
 
 public:
-	using node = uint32_t; // std::vector<node_t>::size_type;
+	using node_index = uint32_t;
 
+	/* \!brief Creates a new ZDD base.
+	 * 
+	 * \param num_vars Number of variables (maximum = 4095)
+	 * \param log_num_objs Log number of nodes to pre-allocate (default: 16)
+	 */
 	explicit zdd_base(uint32_t num_vars, uint32_t log_num_objs = 16)
-	    : unique_table(num_vars)
+	    : unique_tables_(num_vars)
+	    , built_tautologies(false)
+	    , num_variables(num_vars)
+	    , num_cache_lookups(0)
+	    , num_cache_misses(0)
 	{
-		nodes.reserve(1u << log_num_objs);
+		assert(num_variables <= 4095);
+		nodes_.reserve(1u << log_num_objs);
+		nodes_.emplace_back(num_vars, 0, 0);
+		nodes_.emplace_back(num_vars, 1, 1);
+		for (auto var = 0u; var < num_vars; ++var) {
+			ref(unique(var, 0, 1));
+		}
+	}
+#pragma endregion
 
-		nodes.emplace_back(num_vars, 0, 0);
-		nodes.emplace_back(num_vars, 1, 1);
+#pragma region ZDD base properties
+public:
+	/*! \brief Return the number of active nodes. */
+	std::size_t num_nodes() const
+	{
+		return nodes_.size() - 2 - free_nodes_.size();
+	}
+#pragma endregion
 
-		for (auto v = 0u; v < num_vars; ++v) {
-			ref(unique(v, 0, 1));
+#pragma region ZDD base operations
+private:
+	node_index unique(uint32_t var, node_index lo, node_index hi)
+	{
+		/* ZDD reduction rule */
+		if (hi == 0) {
+			return lo;
+		}
+		assert(nodes_.at(lo).var > var);
+		assert(nodes_.at(hi).var > var);
+
+		/* unique table lookup */
+		const auto it = unique_tables_[var].find({lo, hi});
+		if (it != unique_tables_[var].end()) {
+			assert(!nodes_.at(it->second).dead);
+			return it->second;
+		}
+
+		/* create new node */
+		node_index new_node_index;
+		if (!free_nodes_.empty()) {
+			new_node_index = free_nodes_.top();
+			free_nodes_.pop();
+			nodes_.at(new_node_index).ref = 0;
+			nodes_.at(new_node_index).dead = 0;
+			nodes_.at(new_node_index).var = var;
+			nodes_.at(new_node_index).lo = lo;
+			nodes_.at(new_node_index).hi = hi;
+		} else if (nodes_.size() < nodes_.capacity()) {
+			new_node_index = nodes_.size();
+			nodes_.emplace_back(var, lo, hi);
+		} else {
+			std::cerr << "[e] no more space for new nodes available\n";
+			exit(1);
+		}
+
+		/* increase ref counts */
+		ref(lo);
+		ref(hi);
+		return unique_tables_[var][{lo, hi}] = new_node_index;
+	}
+
+	void garbage_collect_rec(node_index index)
+	{
+		if (index <= 1) {
+			return;
+		}
+		node_type& node = nodes_.at(index);
+		if (node.ref == 0 || node.dead == 1) {
+			return;
+		}
+		if (--(node.ref) == 0) {
+			kill_node(index);
+			garbage_collect_rec(node.lo);
+			garbage_collect_rec(node.hi);
 		}
 	}
 
-	node bot() const
+	void kill_node(node_index index)
+	{
+		free_nodes_.push(index);
+		node_type& node = nodes_.at(index);
+		node.dead = 1;
+
+		/* Remove node from unique table */
+		node_index lo = node.lo;
+		node_index hi = node.hi;
+		const auto it = unique_tables_[node.var].find({lo, hi});
+		assert(it != unique_tables_[node.var].end());
+		assert(it->second == index);
+		unique_tables_[node.var].erase(it);
+	}
+public:
+	/*! \brief Returns the node index corresponding to the empty family (aka, node FALSE) */
+	node_index bottom() const
 	{
 		return 0u;
 	}
 
-	node top() const
+	/*! \brief Returns the node index corresponding to the unit family (ake, node TRUE) */
+	node_index top() const
 	{
 		return 1u;
 	}
 
-	node elementary(uint32_t var) const
+	/*! \brief Returns the node-id corresponding to the elementary family `{{var}}` */
+	node_index elementary(uint32_t var) const
 	{
+		assert(var < num_variables);
 		return var + 2u;
 	}
 
@@ -85,587 +194,454 @@ public:
 	 */
 	void build_tautologies()
 	{
-		assert(nodes.size() == unique_table.size() + 2u);
-
-		auto last = top();
-		for (int v = unique_table.size() - 1; v >= 0; --v) {
+		assert(nodes_.size() == unique_tables_.size() + 2u);
+		node_index last = top();
+		for (int v = unique_tables_.size() - 1; v >= 0; --v) {
 			last = unique(v, last, last);
-			assert(last == 2 * unique_table.size() + 1u - v);
+			assert(last == 2 * unique_tables_.size() + 1u - v);
 		}
 		ref(last);
+		built_tautologies = true;
 	}
 
-	node tautology(uint32_t var = 0) const
+	/*! \brief Increase the reference count of a node. */
+	void ref(node_index index)
 	{
-		if (var == unique_table.size())
-			return 1;
-		return 2 * unique_table.size() + 1u - var;
+		if (index > 1) {
+			nodes_.at(index).ref++;
+		}
 	}
 
-	node union_(node f, node g)
+	/*! \brief Decrease the reference count of a node. */
+	void deref(node_index index)
 	{
-		if (f == 0)
-			return g;
-		if (g == 0)
-			return f;
-		if (f == g)
-			return f;
-		if (f > g)
-			std::swap(f, g);
-
-		const auto it = compute_table.find({f, g, zdd_union});
-		if (it != compute_table.end()) {
-			assert(!nodes[it->second].dead);
-			return it->second;
-		}
-
-		auto const& F = nodes[f];
-		auto const& G = nodes[g];
-
-		node r_lo, r_hi;
-
-		if (F.var < G.var) {
-			r_lo = union_(F.lo, g);
-			r_hi = F.hi;
-		} else if (F.var > G.var) {
-			r_lo = union_(f, G.lo);
-			r_hi = G.hi;
-		} else {
-			r_lo = union_(F.lo, G.lo);
-			r_hi = union_(F.hi, G.hi);
-		}
-
-		const auto var = std::min(F.var, G.var);
-		return compute_table[{f, g, zdd_union}] = unique(var, r_lo, r_hi);
-	}
-
-	node intersection(node f, node g)
-	{
-		if (f == 0)
-			return 0;
-		if (g == 0)
-			return 0;
-		if (f == g)
-			return f;
-		if (f > g)
-			std::swap(f, g);
-
-		auto const& F = nodes[f];
-		auto const& G = nodes[g];
-
-		if (F.var < G.var) {
-			return intersection(F.lo, g);
-		} else if (F.var > G.var) {
-			return intersection(f, G.lo);
-		}
-
-		const auto it = compute_table.find({f, g, zdd_intersection});
-		if (it != compute_table.end()) {
-			assert(!nodes[it->second].dead);
-			return it->second;
-		}
-
-		const auto r_lo = intersection(F.lo, G.lo);
-		const auto r_hi = intersection(F.hi, G.hi);
-		return compute_table[{f, g, zdd_intersection}] = unique(F.var, r_lo, r_hi);
-	}
-
-	node difference(node f, node g)
-	{
-		if (f == 0)
-			return 0;
-		if (f == g)
-			return 0;
-		if (g == 0)
-			return f;
-
-		auto const& F = nodes[f];
-		auto const& G = nodes[g];
-
-		if (G.var < F.var)
-			return difference(f, G.lo);
-
-		const auto it = compute_table.find({f, g, zdd_difference});
-		if (it != compute_table.end()) {
-			assert(!nodes[it->second].dead);
-			return it->second;
-		}
-
-		node r_lo, r_hi;
-		if (F.var == G.var) {
-			r_lo = difference(F.lo, G.lo);
-			r_hi = difference(F.hi, G.hi);
-		} else {
-			r_lo = difference(F.lo, g);
-			r_hi = F.hi;
-		}
-		return compute_table[{f, g, zdd_difference}] = unique(F.var, r_lo, r_hi);
-	}
-
-	node join(node f, node g)
-	{
-		if (f == 0)
-			return 0;
-		if (g == 0)
-			return 0;
-		if (f == 1)
-			return g;
-		if (g == 1)
-			return f;
-		if (f > g)
-			std::swap(f, g);
-
-		const auto it = compute_table.find({f, g, zdd_join});
-		if (it != compute_table.end()) {
-			assert(!nodes[it->second].dead);
-			return it->second;
-		}
-
-		auto const& F = nodes[f];
-		auto const& G = nodes[g];
-
-		node r_lo, r_hi;
-
-		if (F.var < G.var) {
-			r_lo = join(F.lo, g);
-			r_hi = join(F.hi, g);
-		} else if (F.var > G.var) {
-			r_lo = join(f, G.lo);
-			r_hi = join(f, G.hi);
-		} else {
-			r_lo = join(F.lo, G.lo);
-			const auto r_lh = join(F.lo, G.hi);
-			const auto r_hl = join(F.hi, G.lo);
-			const auto r_hh = join(F.hi, G.hi);
-			r_hi = union_(r_lh, union_(r_hl, r_hh));
-		}
-
-		const auto var = std::min(F.var, G.var);
-		return compute_table[{f, g, zdd_join}] = unique(var, r_lo, r_hi);
-	}
-
-	node nonsupersets(node f, node g)
-	{
-		if (g == 0)
-			return f;
-		if (f == 0)
-			return 0;
-		if (g == 1)
-			return 0;
-		if (f == g)
-			return 0;
-
-		auto const& F = nodes[f];
-		auto const& G = nodes[g];
-
-		if (F.var > G.var)
-			return nonsupersets(f, G.lo);
-
-		const auto it = compute_table.find({f, g, zdd_nonsupersets});
-		if (it != compute_table.end()) {
-			assert(!nodes[it->second].dead);
-			return it->second;
-		}
-
-		node r_lo, r_hi;
-		if (F.var < G.var) {
-			r_lo = nonsupersets(F.lo, g);
-			r_hi = nonsupersets(F.hi, g);
-		} else {
-			r_hi = intersection(nonsupersets(F.hi, G.lo), nonsupersets(F.hi, G.hi));
-			r_lo = nonsupersets(F.lo, G.lo);
-		}
-
-		return compute_table[{f, g, zdd_nonsupersets}] = unique(F.var, r_lo, r_hi);
-	}
-
-	node edivide(node f, node g)
-	{
-		auto const& F = nodes[f];
-		auto const& G = nodes[g];
-
-		if (F.var == G.var) {
-			return F.hi;
-		}
-
-		if (F.var > G.var) {
-			return 0;
-		}
-
-		const auto it = compute_table.find({f, g, zdd_edivide});
-		if (it != compute_table.end()) {
-			assert(!nodes[it->second].dead);
-			return it->second;
-		}
-
-		node r_lo = edivide(F.lo, g);
-		node r_hi = edivide(F.hi, g);
-		return compute_table[{f, g, zdd_edivide}] = unique(F.var, r_lo, r_hi);
-	}
-
-	node sym(node f, uint32_t v, uint32_t k)
-	{
-		while (nodes[f].var < v) {
-			f = nodes[f].lo;
-		}
-
-		if (f <= 1)
-			return k > 0 ? 0 : tautology(v);
-
-		const auto it = compute3_table.find({f, v, k, zdd_sym});
-		if (it != compute3_table.end()) {
-			assert(!nodes[it->second].dead);
-			return it->second;
-		}
-
-		auto const& F = nodes[f];
-		auto r = sym(f, F.var + 1, k);
-		if (k > 0) {
-			auto q = sym(F.lo, F.var + 1, k - 1);
-			r = unique(F.var, r, q);
-		}
-
-		auto var = F.var;
-		while (var > v) {
-			r = unique(--var, r, r);
-		}
-		return compute3_table[{f, v, k, zdd_sym}] = r;
-	}
-
-	node choose(node f, uint32_t k)
-	{
-		if (k == 1)
-			return f;
-		if (f <= 1)
-			return k > 0 ? 0 : 1;
-
-		const auto it = compute_table.find({f, k, zdd_choose});
-		if (it != compute_table.end()) {
-			assert(!nodes[it->second].dead);
-			return it->second;
-		}
-
-		auto const& F = nodes[f];
-		auto r = choose(F.lo, k);
-		if (k > 0) {
-			auto q = choose(F.lo, k - 1);
-			r = unique(F.var, r, q);
-		}
-
-		return compute_table[{f, k, zdd_choose}] = r;
-	}
-
-public:
-	uint64_t count_sets(node f) const
-	{
-		if (f <= 1)
-			return f;
-
-		std::unordered_map<node, uint64_t> visited;
-		return count_sets_rec(f, visited);
-	}
-
-	uint64_t count_nodes(node f) const
-	{
-		if (f <= 1)
-			return 0;
-
-		std::unordered_set<node> visited;
-		count_nodes_rec(f, visited);
-		return visited.size();
-	}
-
-private:
-	uint64_t count_sets_rec(node f, std::unordered_map<node, uint64_t>& visited) const
-	{
-		if (f <= 1)
-			return f;
-		const auto it = visited.find(f);
-		if (it != visited.end()) {
-			return it->second;
-		}
-
-		auto const& F = nodes[f];
-		return visited[f] = count_sets_rec(F.lo, visited) + count_sets_rec(F.hi, visited);
-	}
-
-	void count_nodes_rec(node f, std::unordered_set<node>& visited) const
-	{
-		if (f <= 1 || visited.count(f))
-			return;
-		visited.insert(f);
-		auto const& F = nodes[f];
-		count_nodes_rec(F.lo, visited);
-		count_nodes_rec(F.hi, visited);
-	}
-
-public:
-	void ref(node f)
-	{
-		if (f > 1) {
-			nodes[f].ref++;
+		if (index > 1 && nodes_.at(index).ref > 0) {
+			nodes_.at(index).ref--;
 		}
 	}
 
-	void deref(node f)
-	{
-		if (f > 1 && nodes[f].ref > 0) {
-			nodes[f].ref--;
-		}
-	}
-
-	std::size_t num_nodes() const
-	{
-		return nodes.size() - 2 - free.size();
-	}
-
+	/*! \brief Remove nodes that are not referenced. */
 	void garbage_collect()
 	{
-		std::vector<node> to_delete;
-		/* skip terminals and elementary nodes */
-		for (auto it = nodes.begin() + unique_table.size() + 2; it != nodes.end(); ++it) {
+		std::vector<node_index> to_delete;
+		/* Skip terminals and elementary nodes */
+		for (auto it = nodes_.begin() + unique_tables_.size() + 2; it != nodes_.end(); ++it) {
 			if (it->ref == 0 && it->dead == 0) {
-				to_delete.push_back(std::distance(nodes.begin(), it));
+				to_delete.push_back(std::distance(nodes_.begin(), it));
 			}
 		}
-		for (auto f : to_delete) {
-			kill_node(f);
-			auto& n = nodes[f];
-			garbage_collect_rec(n.lo);
-			garbage_collect_rec(n.hi);
+		for (auto index : to_delete) {
+			kill_node(index);
+			node_type const& node = nodes_.at(index);
+			garbage_collect_rec(node.lo);
+			garbage_collect_rec(node.hi);
 		}
 
-		/* remove n from compute table */
-		for (auto it = compute_table.begin(); it != compute_table.end();) {
-			if (nodes[it->second].dead || nodes[std::get<0>(it->first)].dead
-			    || nodes[std::get<1>(it->first)].dead) {
-				it = compute_table.erase(it);
-			} else {
-				++it;
+		/* Remove node from compute table */
+		for (auto& table : computed_tables_) {
+			for (auto it = table.begin(); it != table.end();) {
+				if (nodes_[it->second].dead || nodes_[std::get<0>(it->first)].dead
+				    || nodes_[std::get<1>(it->first)].dead) {
+					it = table.erase(it);
+				} else {
+					++it;
+				}
 			}
 		}
-
-		compute3_table.clear(); /* TODO: selective delete? */
 	}
+#pragma endregion
 
-private:
-	void garbage_collect_rec(node f)
-	{
-		if (f <= 1)
-			return;
-		auto& n = nodes[f];
-		if (n.ref == 0 || n.dead == 1)
-			return;
-		if (--(n.ref) == 0) {
-			kill_node(f);
-			garbage_collect_rec(n.lo);
-			garbage_collect_rec(n.hi);
-		}
-	}
-
-	void kill_node(node f)
-	{
-		free.push(f);
-		auto& n = nodes[f];
-		n.dead = 1;
-
-		/* remove n from unique table */
-		const auto it = unique_table[n.var].find({(node) n.lo, (node) n.hi});
-		assert(it != unique_table[n.var].end());
-		assert(it->second == f);
-		unique_table[n.var].erase(it);
-	}
-
+#pragma region ZDD Operations
 public:
-	struct identity_format {
-		constexpr uint32_t operator()(uint32_t v) const noexcept
-		{
-			return v;
+	/* \!brief Computes the family of all ``k``-combinations of a ZDD.  */
+	node_index choose(node_index index_f, uint32_t k)
+	{
+		if (k == 1) {
+			return index_f;
 		}
-	};
-
-	template<class Fn>
-	void foreach_set(node f, Fn&& fn)
-	{
-		std::vector<uint32_t> set;
-		foreach_set_rec(f, set, fn);
-	}
-
-	void sets_to_vector(node f, std::vector<std::vector<uint32_t>> &set_vector)
-	{
-		std::vector<uint32_t> set;
-		sets_to_vector_rec(f, set, set_vector);
-	}
-
-	template<class Formatter = identity_format>
-	void print_sets(node f, Formatter&& fmt = Formatter())
-	{
-		foreach_set(f, [&](auto const& set) {
-			for (auto v : set) {
-				std::cout << fmt(v) << " ";
-			}
-			std::cout << "\n";
-			return true;
-		});
-	}
-
-	template<class Formatter = identity_format>
-	void write_dot(std::ostream& os, Formatter&& fmt = Formatter())
-	{
-		os << "digraph {\n";
-		os << "0[shape=rectangle,label=⊥];\n";
-		os << "1[shape=rectangle,label=⊤];\n";
-
-		for (auto const& t : unique_table) {
-			std::stringstream rank;
-			for (auto const& [_, n] : t) {
-				auto const& N = nodes[n];
-				if (N.dead)
-					continue;
-				os << n << "[shape=ellipse,label=\"" << fmt(N.var) << "\"];\n";
-				os << n << " -> " << N.lo << "[style=dashed]\n";
-				os << n << " -> " << N.hi << "\n";
-				rank << ";" << n;
-			}
-			os << "{rank=same" << rank.str() << "}\n";
+		if (index_f <= 1) {
+			return k > 0 ? 0 : 1;
 		}
 
-		os << "}\n";
+		// Unique table lookup
+		++num_cache_lookups;
+		const auto it = computed_tables_[operations::zdd_choose].find({index_f, k});
+		if (it != computed_tables_[operations::zdd_choose].end()) {
+			assert(!nodes_.at(it->second).dead);
+			return it->second;
+		}
+		++num_cache_misses;
+
+		node_type const& node_f = nodes_.at(index_f);
+		node_index result = choose(node_f.lo, k);
+		if (k > 0) {
+			auto q = choose(node_f.lo, k - 1);
+			result = unique(node_f.var, result, q);
+		}
+		return computed_tables_[operations::zdd_choose][{index_f, k}] = result;
 	}
 
+	/* \!brief Computes the difference of two ZDDs (`f / g`)
+	 *  Keep in mind that `f / g` is different from `g / f` !
+	 */
+	node_index difference(node_index index_f, node_index index_g)
+	{
+		if (index_f == 0) {
+			return 0;
+		}
+		if (index_f == index_g) {
+			return 0;
+		}
+		if (index_g == 0) {
+			return index_f;
+		}
+
+		node_type const& node_f = nodes_.at(index_f);
+		node_type const& node_g = nodes_.at(index_g);
+		if (node_g.var < node_f.var) {
+			return difference(index_f, node_g.lo);
+		}
+
+		// Unique table lookup
+		++num_cache_lookups;
+		const auto it = computed_tables_[operations::zdd_difference].find({index_f, index_g});
+		if (it != computed_tables_[operations::zdd_difference].end()) {
+			assert(!nodes_.at(it->second).dead);
+			return it->second;
+		}
+		++num_cache_misses;
+
+		node_index r_lo;
+		node_index r_hi;
+		if (node_f.var == node_g.var) {
+			r_lo = difference(node_f.lo, node_g.lo);
+			r_hi = difference(node_f.hi, node_g.hi);
+		} else {
+			r_lo = difference(node_f.lo, index_g);
+			r_hi = node_f.hi;
+		}
+		node_index index_new = unique(node_f.var, r_lo, r_hi);
+		return computed_tables_[operations::zdd_difference][{index_f, index_g}] = index_new;
+	}
+
+	/* \!brief Computes the intersection of two ZDDs */
+	node_index intersection(node_index index_f, node_index index_g)
+	{
+		if (index_f == 0) {
+			return 0;
+		}
+		if (index_g == 0) {
+			return 0;
+		}
+		if (index_f == index_g) {
+			return index_f;
+		}
+		if (index_f > index_g) {
+			std::swap(index_f, index_g);
+		}
+
+		node_type const& node_f = nodes_.at(index_f);
+		node_type const& node_g = nodes_.at(index_g);
+		if (node_f.var < node_g.var) {
+			return intersection(node_f.lo, index_g);
+		} else if (node_f.var > node_g.var) {
+			return intersection(index_f, node_g.lo);
+		}
+
+		// Unique table lookup
+		++num_cache_lookups;
+		const auto it = computed_tables_[operations::zdd_intersection].find({index_f, index_g});
+		if (it != computed_tables_[operations::zdd_intersection].end()) {
+			assert(!nodes_.at(it->second).dead);
+			return it->second;
+		}
+		++num_cache_misses;
+
+		node_index const r_lo = intersection(node_f.lo, node_g.lo);
+		node_index const r_hi = intersection(node_f.hi, node_g.hi);
+		node_index index_new = unique(node_f.var, r_lo, r_hi);
+		return computed_tables_[operations::zdd_intersection][{index_f, index_g}] = index_new;
+	}
+
+	/* \!brief Computes the join of two ZDDs */
+	node_index join(node_index index_f, node_index index_g)
+	{
+		if (index_f == 0) {
+			return 0;
+		}
+		if (index_g == 0) {
+			return 0;
+		}
+		if (index_f == 1) {
+			return index_g;
+		}
+		if (index_g == 1) {
+			return index_f;
+		}
+		if (index_f > index_g) {
+			std::swap(index_f, index_g);
+		}
+
+		// Unique table lookup
+		++num_cache_lookups;
+		const auto it = computed_tables_[operations::zdd_join].find({index_f, index_g});
+		if (it != computed_tables_[operations::zdd_join].end()) {
+			assert(!nodes_.at(it->second).dead);
+			return it->second;
+		}
+		++num_cache_misses;
+
+		node_type const& node_f = nodes_.at(index_f);
+		node_type const& node_g = nodes_.at(index_g);
+		node_index r_lo;
+		node_index r_hi;
+		if (node_f.var < node_g.var) {
+			r_lo = join(node_f.lo, index_g);
+			r_hi = join(node_f.hi, index_g);
+		} else if (node_f.var > node_g.var) {
+			r_lo = join(index_f, node_g.lo);
+			r_hi = join(index_f, node_g.hi);
+		} else {
+			r_lo = join(node_f.lo, node_f.lo);
+			node_index const r_lh = join(node_f.lo, node_g.hi);
+			node_index const r_hl = join(node_f.hi, node_g.lo);
+			node_index const r_hh = join(node_f.hi, node_g.hi);
+			r_hi = union_(r_lh, union_(r_hl, r_hh));
+		}
+		const auto var = std::min(node_f.var, node_g.var);
+		node_index index_new = unique(var, r_lo, r_hi);
+		return computed_tables_[operations::zdd_join][{index_f, index_g}] = index_new;
+	}
+
+	/* \!brief Computes the nonsupersets of two ZDDs */
+	node_index nonsupersets(node_index index_f, node_index index_g)
+	{
+		if (index_f == 0) {
+			return 0;
+		}
+		if (index_g == 0) {
+			return index_f;
+		}
+		if (index_g == 1) {
+			return 0;
+		}
+		if (index_f == index_g) {
+			return 0;
+		}
+
+		node_type const& node_f = nodes_.at(index_f);
+		node_type const& node_g = nodes_.at(index_g);
+		if (node_f.var > node_g.var) {
+			return nonsupersets(index_f, node_g.lo);
+		}
+
+		// Unique table lookup
+		++num_cache_lookups;
+		const auto it = computed_tables_[operations::zdd_nonsupersets].find({index_f, index_g});
+		if (it != computed_tables_[operations::zdd_nonsupersets].end()) {
+			assert(!nodes_.at(it->second).dead);
+			return it->second;
+		}
+		++num_cache_misses;
+
+		node_index r_lo;
+		node_index r_hi;
+		if (node_f.var < node_g.var) {
+			r_lo = nonsupersets(node_f.lo, index_g);
+			r_hi = nonsupersets(node_f.hi, index_g);
+		} else {
+			r_hi = intersection(nonsupersets(node_f.hi, node_g.lo),
+			                    nonsupersets(node_f.hi, node_g.hi));
+			r_lo = nonsupersets(node_f.lo, node_g.lo);
+		}
+		node_index index_new = unique(node_f.var, r_lo, r_hi);
+		return computed_tables_[operations::zdd_nonsupersets][{index_f, index_g}] = index_new;
+	}
+
+	/* \!brief Return the tautology function ``f(var) = true`` 
+	 *  Important: the function ``build_tautologies`` must have been called.
+	 */
+	node_index tautology(uint32_t var = 0) const
+	{
+		assert(built_tautologies);
+		if (var == unique_tables_.size()) {
+			return top();
+		}
+		return 2 * unique_tables_.size() + 1u - var;
+	}
+
+	/* \!brief Computes the union of two ZDDs */
+	node_index union_(node_index index_f, node_index index_g)
+	{
+		if (index_f == 0) {
+			return index_g;
+		}
+		if (index_g == 0) {
+			return index_f;
+		}
+		if (index_f == index_g) {
+			return index_f;
+		}
+		if (index_f > index_g) {
+			std::swap(index_f, index_g);
+		}
+
+		// Unique table lookup
+		++num_cache_lookups;
+		const auto it = computed_tables_[operations::zdd_union].find({index_f, index_g});
+		if (it != computed_tables_[operations::zdd_union].end()) {
+			assert(!nodes_.at(it->second).dead);
+			return it->second;
+		}
+		++num_cache_misses;
+
+		node_type const& node_f = nodes_.at(index_f);
+		node_type const& node_g = nodes_.at(index_g);
+		node_index r_lo;
+		node_index r_hi;
+		if (node_f.var < node_g.var) {
+			r_lo = union_(node_f.lo, index_g);
+			r_hi = node_f.hi;
+		} else if (node_f.var > node_g.var) {
+			r_lo = union_(index_f, node_g.lo);
+			r_hi = node_g.hi;
+		} else {
+			r_lo = union_(node_f.lo, node_g.lo);
+			r_hi = union_(node_f.hi, node_g.hi);
+		}
+		const auto var = std::min(node_f.var, node_g.var);
+		node_index index_new = unique(var, r_lo, r_hi);
+		return computed_tables_[operations::zdd_union][{index_f, index_g}] = index_new;
+	}
+#pragma endregion
+
+#pragma region ZDD iterators
 private:
 	template<class Fn>
-	bool foreach_set_rec(node f, std::vector<uint32_t>& set, Fn&& fn)
+	bool foreach_set_rec(node_index index, std::vector<uint32_t>& set, Fn&& fn) const
 	{
-		if (f == 1) {
+		if (index == 1u) {
 			return fn(set);
-		} else if (f != 0) {
-			if (!foreach_set_rec(nodes[f].lo, set, fn)) {
+		}
+		if (index != 0u) {
+			if (!foreach_set_rec(nodes_.at(index).lo, set, fn)) {
 				return false;
 			}
-			auto set1 = set;
-			set1.push_back(nodes[f].var);
-			if (!foreach_set_rec(nodes[f].hi, set1, fn)) {
+			auto new_set = set;
+			new_set.push_back(nodes_.at(index).var);
+			if (!foreach_set_rec(nodes_.at(index).hi, new_set, fn)) {
 				return false;
 			}
 		}
-
 		return true;
 	}
 
-	void sets_to_vector_rec(node f, std::vector<uint32_t>& set,
-	                        std::vector<std::vector<uint32_t>>& set_vector)
+public:
+	template<class Fn>
+	void foreach_set(node_index index, Fn&& fn) const
 	{
-		if (f == 1) {
-			std::vector<uint32_t> single_set;
-			for (auto v : set) {
-				single_set.push_back(v);
-			}
-			set_vector.push_back(single_set);
-		} else if (f != 0) {
-			sets_to_vector_rec(nodes[f].lo, set, set_vector);
-			auto set1 = set;
-			set1.push_back(nodes[f].var);
-			sets_to_vector_rec(nodes[f].hi, set1, set_vector);
+		std::vector<uint32_t> set;
+		foreach_set_rec(index, set, fn);
+	}
+#pragma endregion
+
+#pragma region ZDD properties
+private:
+	void count_nodes_rec(node_index index, std::unordered_set<node_index>& visited) const
+	{
+		if (index <= 1 || visited.count(index)) {
+			return;
 		}
+		visited.insert(index);
+		node_type const& node = nodes_.at(index);
+		count_nodes_rec(node.lo, visited);
+		count_nodes_rec(node.hi, visited);
+	}
+
+	uint64_t count_sets_rec(node_index index, std::unordered_map<node_index, uint64_t>& visited) const
+	{
+		if (index <= 1) {
+			return index;
+		}
+		const auto it = visited.find(index);
+		if (it != visited.end()) {
+			return it->second;
+		}
+		node_type const& node = nodes_.at(index);
+		return visited[index] = count_sets_rec(node.lo, visited)
+		                      + count_sets_rec(node.hi, visited);
 	}
 
 public:
-	void debug()
+	/* \!brief Return the number of nodes in a ZDD. */
+	uint64_t count_nodes(node_index index_root) const
 	{
-		std::cout << "    i     VAR    LO    HI   REF  DEAD\n";
-		int i{0};
-		for (auto const& n : nodes) {
-			std::cout << std::setw(5) << i++ << " : " << std::setw(5) << n.var << " "
-			          << std::setw(5) << n.lo << " " << std::setw(5) << n.hi << " "
-			          << std::setw(5) << n.ref << " " << std::setw(5) << n.dead << "\n";
+		if (index_root <= 1) {
+			return 0;
 		}
-		summary();
+		std::unordered_set<node_index> visited;
+		count_nodes_rec(index_root, visited);
+		return visited.size();
 	}
 
-	void summary()
+	/* \!brief Return the number of sets in a ZDD. */
+	uint64_t count_sets(node_index index_root) const
 	{
-		std::cout << "live nodes = " << num_nodes() << "   dead nodes = " << free.size()
-		          << "\n";
+		if (index_root <= 1) {
+			return index_root;
+		}
+		std::unordered_map<node_index, uint64_t> visited;
+		return count_sets_rec(index_root, visited);
 	}
 
-private: /* hash functions */
-	struct unique_table_hash {
-		std::size_t operator()(std::pair<uint32_t, uint32_t> const& p) const
-		{
-			return 12582917 * p.first + 4256249 * p.second;
-		}
-	};
+	std::vector<std::vector<uint32_t>> sets_as_vectors(node_index index) const
+	{
+		std::vector<std::vector<uint32_t>> sets_vectors;
+		foreach_set(index, [&](auto const& set){
+			sets_vectors.emplace_back(set);
+			return true;
+		});
+		return sets_vectors;
+	}
+#pragma endregion
 
-	struct compute_table_hash {
-		std::size_t operator()(std::tuple<uint32_t, uint32_t, op_t> const& p) const
-		{
-			return 12582917 * std::get<0>(p) + 4256249 * std::get<1>(p)
-			       + 741457 * static_cast<uint32_t>(std::get<2>(p));
+#pragma region Debug
+public:
+	void print_debug(std::ostream& os = std::cout) const
+	{
+		os << "ZDD nodes:\n";
+		os << "    i     VAR    LO    HI   REF\n";
+		uint32_t i = 0u;
+		for (node_type const& node : nodes_) {
+			os << fmt::format("{:5} : {:5} {:5} {:5} {:5}\n", i++, node.var, node.lo,
+			                  node.hi, node.ref);
 		}
-	};
+	}
 
-	struct compute3_table_hash {
-		std::size_t operator()(std::tuple<uint32_t, uint32_t, uint32_t, op_t> const& p) const
-		{
-			return 18803 * std::get<0>(p) + 53777 * std::get<1>(p)
-			       + 61231 * std::get<2>(p)
-			       + 3571 * static_cast<uint32_t>(std::get<3>(p));
-		}
-	};
+	void print_sets(node_index index, std::ostream& os = std::cout) const
+	{
+		foreach_set(index, [&](auto const& set){
+			os << fmt::format("{{ {} }}\n", fmt::join(set, ", "));
+			return true;
+		});
+	}
+#pragma endregion
 
 private:
-	node unique(uint32_t var, node lo, node hi)
-	{
-		/* ZDD reduction rule */
-		if (hi == 0) {
-			return lo;
-		}
+	using children_type = std::pair<node_index, node_index>;
+	using unique_table_type = std::unordered_map<children_type, node_index>;
 
-		assert(nodes[lo].var > var);
-		assert(nodes[hi].var > var);
+	std::vector<node_type> nodes_;
+	std::stack<node_index> free_nodes_;
+	std::vector<unique_table_type> unique_tables_;
+	std::array<unique_table_type, operations::num_operations> computed_tables_;
 
-		/* unique table lookup */
-		const auto it = unique_table[var].find({lo, hi});
-		if (it != unique_table[var].end()) {
-			assert(!nodes[it->second].dead);
-			return it->second;
-		}
+	bool built_tautologies = false;
 
-		/* create new node */
-		node r;
-
-		if (!free.empty()) {
-			r = free.top();
-			free.pop();
-			nodes[r].ref = nodes[r].dead = 0;
-			nodes[r] = {var, lo, hi};
-		} else if (nodes.size() < nodes.capacity()) {
-			r = nodes.size();
-			nodes.emplace_back(var, lo, hi);
-		} else {
-			std::cerr << "[e] no more space for new nodes available\n";
-			exit(1);
-		}
-
-		/* increase ref counts */
-		if (lo > 1) {
-			nodes[lo].ref++;
-		}
-		if (hi > 1) {
-			nodes[hi].ref++;
-		}
-
-		return unique_table[var][{lo, hi}] = r;
-	}
-
-private:
-	std::vector<node_t> nodes;
-	std::stack<node> free;
-	std::vector<std::unordered_map<std::pair<uint32_t, uint32_t>, node, unique_table_hash>> unique_table;
-	std::unordered_map<std::tuple<uint32_t, uint32_t, op_t>, node, compute_table_hash> compute_table;
-	std::unordered_map<std::tuple<uint32_t, uint32_t, uint32_t, op_t>, node, compute3_table_hash>
-	    compute3_table;
+	// Stats
+	uint32_t num_variables;
+	uint32_t num_cache_lookups;
+	uint32_t num_cache_misses;
 };
 
 } // namespace bill

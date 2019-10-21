@@ -25,13 +25,15 @@ option(BILL_EXAMPLES "Build examples" ON)
 option(BILL_EXPERIMENTS "Build experiments" OFF)
 option(BILL_TESTS "Build tests" OFF)
 
-# Library
-# =============================================================================
-add_subdirectory(include)
-
 # Libs
 # =============================================================================
 add_subdirectory(libs)
+
+# Library
+# =============================================================================
+add_library(bill INTERFACE)
+target_include_directories(bill INTERFACE ${PROJECT_SOURCE_DIR}/include)
+target_link_libraries(bill INTERFACE fmt sat_solvers)
 
 # Documentation
 # =============================================================================
