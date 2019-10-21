@@ -100,6 +100,13 @@ TEST_CASE("ZDD Operations", "[zdd]")
 		zdd.print_sets(zdd_join, os);
 		CHECK(os.str() == "{ 0, 1 }\n");
 	}
+	SECTION("Tautology")
+	{
+		zdd.build_tautologies();
+		auto zdd_tautology = zdd.tautology(zdd_0);
+		zdd.print_sets(zdd_tautology, os);
+		CHECK(os.str() == "{  }\n");
+	}
 	SECTION("Union with TOP")
 	{
 		auto zdd_union = zdd.union_(zdd_0, zdd.top());
@@ -116,4 +123,20 @@ TEST_CASE("ZDD Operations", "[zdd]")
 		zdd.print_sets(zdd_union, os);
 		CHECK(os.str() == "{ 1 }\n{ 0 }\n");
 	}
+}
+
+TEST_CASE("ZDD choose operation", "[zdd]")
+{
+	using namespace bill;
+	std::ostringstream os;
+	zdd_base zdd(3);
+	auto zdd_0 = zdd.elementary(0);
+	auto zdd_1 = zdd.elementary(1);
+	auto zdd_2 = zdd.elementary(2);
+	auto zdd_union = zdd.union_(zdd_0, zdd_1);
+	zdd_union = zdd.union_(zdd_union, zdd_2);
+	
+	auto zdd_choose = zdd.choose(zdd_union, 2);
+	zdd.print_sets(zdd_choose, os);
+	CHECK(os.str() == "{ 1, 2 }\n{ 0, 2 }\n{ 0, 1 }\n");
 }
