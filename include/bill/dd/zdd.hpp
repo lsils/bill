@@ -71,8 +71,8 @@ public:
 	 */
 	explicit zdd_base(uint32_t num_vars, uint32_t log_num_objs = 16)
 	    : unique_tables_(num_vars)
+	    , built_tautologies(false)
 	    , num_variables(num_vars)
-	    . built_tautologies(false)
 	    , num_cache_lookups(0)
 	    , num_cache_misses(0)
 	{
