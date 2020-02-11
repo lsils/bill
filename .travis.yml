@@ -4,74 +4,72 @@ script:
   - mkdir build
   - cd build
   - cmake -DCMAKE_CXX_COMPILER=$COMPILER -DBILL_TESTS=ON -DBILL_EXPERIMENTS=ON ..
-  - make all
+  - make run_tests
   - ./tests/run_tests
 
-matrix:
+jobs:
   include:
   - os: linux
-    dist: trusty
-    sudo: required
+    dist: bionic
     compiler: gcc
     addons:
       apt:
-        sources:
-          - ubuntu-toolchain-r-test
+        sources: 
+          - sourceline: "ppa:ubuntu-toolchain-r/test"
         packages:
           - g++-7
+          - libblas-dev
+          - liblapack-dev
     env: COMPILER=g++-7
+
   - os: linux
-    dist: trusty
-    sudo: required
+    dist: bionic
     compiler: gcc
     addons:
       apt:
         sources:
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-8
-    env: COMPILER=g++-8
-  - os: linux
-    dist: trusty
-    sudo: required
-    compiler: gcc
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
+          - sourceline: "ppa:ubuntu-toolchain-r/test"
         packages:
           - g++-9
+          - libblas-dev
+          - liblapack-dev
     env: COMPILER=g++-9
+
   - os: linux
-    dist: trusty
-    sudo: required
+    dist: bionic
     compiler: clang
     addons:
       apt:
         sources:
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-6.0
+          - sourceline: "ppa:ubuntu-toolchain-r/test"
         packages:
-          - clang-6.0
-          - g++-7
-    env: COMPILER=clang++-6.0
+          - libblas-dev
+          - liblapack-dev
+    env: COMPILER=clang++
+
   - os: osx
-    osx_image: xcode10.2
+    osx_image: xcode10.3
     compiler: clang
     before_install:
       - brew update
       - brew install llvm
     env: COMPILER=/usr/local/opt/llvm/bin/clang++
+
   - os: osx
-    osx_image: xcode10.2
+    osx_image: xcode10.3
     compiler: gcc
     before_install:
-      - brew upgrade gcc
+      - export HOMEBREW_NO_INSTALL_CLEANUP=1
+      - brew uninstall --ignore-dependencies gcc
+      - brew update
+      - brew install gcc
     env: COMPILER=/usr/local/opt/gcc/bin/g++-9
+
   - os: osx
-    osx_image: xcode10.2
+    osx_image: xcode10.3
     compiler: gcc
     before_install:
+      - export HOMEBREW_NO_INSTALL_CLEANUP=1
       - brew update
       - brew install gcc@7
     env: COMPILER=/usr/local/opt/gcc@7/bin/g++-7
