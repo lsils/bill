@@ -24,23 +24,32 @@ option(BILL_DOCS "Build documentation" OFF)
 option(BILL_EXAMPLES "Build examples" ON)
 option(BILL_EXPERIMENTS "Build experiments" OFF)
 option(BILL_TESTS "Build tests" OFF)
+option(BILL_Z3 "Enable Z3 interface" OFF)
 
 # Libs
 # =============================================================================
 add_subdirectory(lib)
 
-# Z3
-# =============================================================================
-add_library(z3int INTERFACE)
-target_include_directories(z3int SYSTEM INTERFACE /usr/local/include)
-target_link_directories(z3int INTERFACE /usr/local/lib)
-target_link_libraries(z3int INTERFACE z3)
-
 # Library
 # =============================================================================
 add_library(bill INTERFACE)
 target_include_directories(bill INTERFACE ${PROJECT_SOURCE_DIR}/include)
-target_link_libraries(bill INTERFACE fmt z3int)
+target_link_libraries(bill INTERFACE fmt)
+
+# Z3 (optional)
+# =============================================================================
+if(BILL_Z3)
+  target_compile_definitions(bill INTERFACE BILL_HAS_Z3)
+  set(BILL_Z3_INCLUDE_PATH "" CACHE PATH "Path to Z3 includes, e.g., z3++.h")
+  set(BILL_Z3_LIBRARY_PATH "" CACHE PATH "Path to Z3 library, e.g., libz3.a")
+  if(NOT ${BILL_Z3_INCLUDE_PATH} STREQUAL "")
+    target_include_directories(bill INTERFACE ${BILL_Z3_INCLUDE_PATH})
+  endif()
+  if(NOT ${BILL_Z3_LIBRARY_PATH} STREQUAL "")
+    target_link_directories(bill INTERFACE ${BILL_Z3_LIBRARY_PATH})
+  endif()
+  target_link_libraries(bill INTERFACE z3)
+endif()
 
 # Documentation
 # =============================================================================

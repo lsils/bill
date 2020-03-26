@@ -137,7 +137,9 @@ enum class solvers {
 	maple,
 	bsat2,
 	bmcg,
+#if defined(BILL_HAS_Z3)
 	z3
+#endif
 #endif
 };
 

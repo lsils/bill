@@ -4,6 +4,8 @@
 *------------------------------------------------------------------------------------------------*/
 #pragma once
 
+#if defined(BILL_HAS_Z3)
+
 #include "common.hpp"
 #include "types.hpp"
 
@@ -13,7 +15,6 @@
 
 namespace bill {
 
-#if !defined(BILL_WINDOWS_PLATFORM)
 template<>
 class solver<solvers::z3> {
 public:
@@ -91,7 +92,14 @@ public:
 	}
 
 	result get_result() const
-	{}
+	{
+		assert(state_ != result::states::dirty);
+		if (state_ == result::states::satisfiable) {
+			return get_model();
+		} else {
+			return result();
+		}
+	}
 
 	result::states solve(std::vector<lit_type> const& assumptions = {},
 	                     uint32_t conflict_limit = 0)
@@ -137,6 +145,7 @@ private:
 	uint32_t var_ctr_{};
 	uint32_t cls_ctr_{};
 };
-#endif
 
 } // namespace bill
+
+#endif
