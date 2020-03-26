@@ -29,11 +29,18 @@ option(BILL_TESTS "Build tests" OFF)
 # =============================================================================
 add_subdirectory(lib)
 
+# Z3
+# =============================================================================
+add_library(z3int INTERFACE)
+target_include_directories(z3int SYSTEM INTERFACE /usr/local/include)
+target_link_directories(z3int INTERFACE /usr/local/lib)
+target_link_libraries(z3int INTERFACE z3)
+
 # Library
 # =============================================================================
 add_library(bill INTERFACE)
 target_include_directories(bill INTERFACE ${PROJECT_SOURCE_DIR}/include)
-target_link_libraries(bill INTERFACE fmt)
+target_link_libraries(bill INTERFACE fmt z3int)
 
 # Documentation
 # =============================================================================

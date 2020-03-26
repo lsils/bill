@@ -137,6 +137,7 @@ enum class solvers {
 	maple,
 	bsat2,
 	bmcg,
+	z3
 #endif
 };
 
