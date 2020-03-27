@@ -10,6 +10,7 @@
 #include "types.hpp"
 
 #include <fmt/format.h>
+#include <limits>
 #include <vector>
 #include <z3++.h>
 
@@ -21,7 +22,8 @@ public:
 #pragma region Constructors
 	solver()
 	    : solver_(ctx_)
-	{}
+	{
+	}
 
 	~solver()
 	{}
@@ -102,13 +104,14 @@ public:
 	}
 
 	result::states solve(std::vector<lit_type> const& assumptions = {},
-	                     uint32_t conflict_limit = 0)
+	                     uint32_t conflict_limit = 0u)
 	{
 		(void) conflict_limit;
 		z3::expr_vector vec(ctx_);
 		for (auto const& lit : assumptions)
 			vec.push_back(lit.is_complemented() ? !vars_[lit.variable()] :
 			                                      vars_[lit.variable()]);
+		solver_.set("sat.max_conflicts", conflict_limit == 0u ? std::numeric_limits<uint32_t>::max() : conflict_limit);
 		switch (solver_.check(vec)) {
 		case z3::sat:
 			state_ = result::states::satisfiable;
@@ -121,6 +124,7 @@ public:
 			state_ = result::states::undefined;
 			break;
 		};
+		z3::reset_params();
 		return state_;
 	}
 #pragma endregion
