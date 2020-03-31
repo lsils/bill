@@ -160,6 +160,23 @@ TEMPLATE_TEST_CASE("Restart", "[sat][template]", SOLVER_TYPES)
 	CHECK(solver.num_clauses() == 0u);
 }
 
+TEMPLATE_TEST_CASE("Solve after solve, no problem", "[sat][template]", SOLVER_TYPES)
+{
+	TestType solver;
+	const auto zero = bill::lit_type{solver.add_variable()};
+	const auto a = bill::lit_type{solver.add_variable()};
+	const auto b = bill::lit_type{solver.add_variable()};
+	const auto f = bill::lit_type{solver.add_variable()};
+
+	solver.add_clause({~zero});
+	solver.add_clause({~a, b, f});
+	solver.add_clause({a, ~b, f});
+	solver.add_clause({a, b, ~f});
+	solver.add_clause({~a, ~b, ~f});
+
+	CHECK(solver.solve({zero}) == bill::result::states::unsatisfiable);
+}
+
 TEMPLATE_TEST_CASE("Double assumptions, solve after solve", "[sat][template]", SOLVER_TYPES)
 {
 	TestType solver;
