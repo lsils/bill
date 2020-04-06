@@ -195,13 +195,13 @@ TEMPLATE_TEST_CASE("XOR clause", "[sat][template]", SOLVER_TYPES)
 		auto const t1 = add_xor_clause(solver, {a, b, c}, lit_type::polarities::negative);
 		solver.add_clause(t1);
 
-		/* unsatisifable solutions: a + b + c is even */
+		/* unsatisifable solutions: a + b + c is odd */
 		CHECK(solver.solve({a, ~b, ~c}) == result::states::unsatisfiable);
 		CHECK(solver.solve({~a, b, ~c}) == result::states::unsatisfiable);
 		CHECK(solver.solve({~a, ~b, c}) == result::states::unsatisfiable);
 		CHECK(solver.solve({a, b, c}) == result::states::unsatisfiable);
 
-		/* satisifable solutions: a + b + c is odd */
+		/* satisifable solutions: a + b + c is even */
 		CHECK(solver.solve({~a, ~b, ~c}) == result::states::satisfiable);
 		CHECK(solver.solve({a, b, ~c}) == result::states::satisfiable);
 		CHECK(solver.solve({a, ~b, c}) == result::states::satisfiable);
