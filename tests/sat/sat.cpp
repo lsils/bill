@@ -7,6 +7,7 @@
 
 #include <bill/sat/solver.hpp>
 #include <bill/sat/tseytin.hpp>
+#include <bill/sat/xor_clauses.hpp>
 #include <iostream>
 #include <vector>
 
@@ -17,11 +18,11 @@ using namespace bill;
 #elif defined(BILL_HAS_Z3)
 #define SOLVER_TYPES                                                                 \
 	solver<solvers::glucose_41>, solver<solvers::ghack>, solver<solvers::maple>, \
-          solver<solvers::bsat2>, solver<solvers::bmcg>, solver<solvers::z3>
+	    solver<solvers::bsat2>, solver<solvers::bmcg>, solver<solvers::z3>
 #else
 #define SOLVER_TYPES                                                                 \
 	solver<solvers::glucose_41>, solver<solvers::ghack>, solver<solvers::maple>, \
-          solver<solvers::bsat2>, solver<solvers::bmcg>
+	    solver<solvers::bsat2>, solver<solvers::bmcg>
 #endif
 
 TEMPLATE_TEST_CASE("Simple SAT", "[sat][template]", SOLVER_TYPES)
@@ -193,4 +194,52 @@ TEMPLATE_TEST_CASE("Double assumptions, solve after solve", "[sat][template]", S
 
 	CHECK(solver.solve({f}) == bill::result::states::satisfiable);
 	CHECK(solver.solve({zero}) == bill::result::states::unsatisfiable);
+}
+
+TEMPLATE_TEST_CASE("XOR clause", "[sat][template]", SOLVER_TYPES)
+{
+	TestType solver;
+	{
+		auto const a = lit_type(solver.add_variable(), lit_type::polarities::positive);
+		auto const b = lit_type(solver.add_variable(), lit_type::polarities::positive);
+		auto const c = lit_type(solver.add_variable(), lit_type::polarities::positive);
+
+		auto const t0 = add_xor_clause(solver, {a, b, c});
+		solver.add_clause(t0);
+
+		/* satisifable solutions: a + b + c is odd */
+		CHECK(solver.solve({a, ~b, ~c}) == result::states::satisfiable);
+		CHECK(solver.solve({~a, b, ~c}) == result::states::satisfiable);
+		CHECK(solver.solve({~a, ~b, c}) == result::states::satisfiable);
+		CHECK(solver.solve({a, b, c}) == result::states::satisfiable);
+
+		/* unsatisifable solutions: a + b + c is even */
+		CHECK(solver.solve({~a, ~b, ~c}) == result::states::unsatisfiable);
+		CHECK(solver.solve({a, b, ~c}) == result::states::unsatisfiable);
+		CHECK(solver.solve({a, ~b, c}) == result::states::unsatisfiable);
+		CHECK(solver.solve({~a, b, c}) == result::states::unsatisfiable);
+	}
+
+	solver.restart();
+
+	{
+		auto const a = lit_type(solver.add_variable(), lit_type::polarities::positive);
+		auto const b = lit_type(solver.add_variable(), lit_type::polarities::positive);
+		auto const c = lit_type(solver.add_variable(), lit_type::polarities::positive);
+
+		auto const t1 = add_xor_clause(solver, {a, b, c}, lit_type::polarities::negative);
+		solver.add_clause(t1);
+
+		/* unsatisifable solutions: a + b + c is odd */
+		CHECK(solver.solve({a, ~b, ~c}) == result::states::unsatisfiable);
+		CHECK(solver.solve({~a, b, ~c}) == result::states::unsatisfiable);
+		CHECK(solver.solve({~a, ~b, c}) == result::states::unsatisfiable);
+		CHECK(solver.solve({a, b, c}) == result::states::unsatisfiable);
+
+		/* satisifable solutions: a + b + c is even */
+		CHECK(solver.solve({~a, ~b, ~c}) == result::states::satisfiable);
+		CHECK(solver.solve({a, b, ~c}) == result::states::satisfiable);
+		CHECK(solver.solve({a, ~b, c}) == result::states::satisfiable);
+		CHECK(solver.solve({~a, b, c}) == result::states::satisfiable);
+	}
 }
