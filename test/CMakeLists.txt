@@ -9,11 +9,17 @@ include_directories(catch2)
 
 #  All Tests
 #  =============================================================================
-add_custom_target(bill_tests COMMENT "Build all tests.")
+add_custom_target(bill_test COMMENT "Build all tests.")
 
 file(GLOB_RECURSE FILENAMES *.cpp)
 
 add_executable(run_tests "${FILENAMES}")
-target_link_libraries(run_tests bill)
-add_dependencies(bill_tests run_tests)
+
+if (ENABLE_COVERAGE)
+  target_link_libraries(run_tests bill gcov)
+else()
+  target_link_libraries(run_tests bill)
+endif()
+
+add_dependencies(bill_test run_tests)
 
