@@ -6,6 +6,15 @@ project(bill LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Options
+# =============================================================================
+option(BILL_DOCS "Build documentation" OFF)
+option(BILL_EXAMPLES "Build examples" ON)
+option(BILL_EXPERIMENTS "Build experiments" OFF)
+option(BILL_TEST "Build tests" OFF)
+option(BILL_Z3 "Enable Z3 interface" OFF)
+option(ENABLE_COVERAGE "Enable coverage reporting for gcc/clang" OFF)
+
 if(UNIX)
   # show quite some warnings (but remove some intentionally)
   include(CheckCXXCompilerFlag)
@@ -16,15 +25,10 @@ if(UNIX)
       add_compile_options(-Wno-${WARNING})
     endif()
   endforeach()
+  if (ENABLE_COVERAGE)
+    add_compile_options(-O0 -g --coverage -fprofile-arcs -ftest-coverage)
+  endif()
 endif()
-
-# Options
-# =============================================================================
-option(BILL_DOCS "Build documentation" OFF)
-option(BILL_EXAMPLES "Build examples" ON)
-option(BILL_EXPERIMENTS "Build experiments" OFF)
-option(BILL_TESTS "Build tests" OFF)
-option(BILL_Z3 "Enable Z3 interface" OFF)
 
 # Libs
 # =============================================================================
@@ -71,6 +75,6 @@ endif()
 
 # Tests
 # =============================================================================
-if(BILL_TESTS)
-  add_subdirectory(tests)
+if(BILL_TEST)
+  add_subdirectory(test)
 endif()
