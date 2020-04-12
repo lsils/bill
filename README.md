@@ -1,5 +1,6 @@
-[![Build Status](https://travis-ci.org/lsils/bill.svg?branch=master)](https://travis-ci.org/lsils/bill)
-[![Build status](https://ci.appveyor.com/api/projects/status/pu4w14anom4lesoj?svg=true)](https://ci.appveyor.com/project/hriener/bill)
+[![Actions Status](https://github.com/lsils/bill/workflows/Linux%20CI/badge.svg)](https://github.com/lsils/bill/actions)
+[![Actions Status](https://github.com/lsils/bill/workflows/MacOS%20CI/badge.svg)](https://github.com/lsils/bill/actions)
+[![Actions Status](https://github.com/lsils/bill/workflows/Windows%20CI/badge.svg)](https://github.com/lsils/bill/actions)
 [![Documentation Status](https://readthedocs.org/projects/bill/badge/?version=latest)](https://bill.readthedocs.io/en/latest/?badge=latest)
 [![License](https://img.shields.io/badge/license-MIT-000000.svg)](https://opensource.org/licenses/MIT)
 
