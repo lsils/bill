@@ -1,6 +1,7 @@
 [![Actions Status](https://github.com/lsils/bill/workflows/Linux%20CI/badge.svg)](https://github.com/lsils/bill/actions)
 [![Actions Status](https://github.com/lsils/bill/workflows/MacOS%20CI/badge.svg)](https://github.com/lsils/bill/actions)
 [![Actions Status](https://github.com/lsils/bill/workflows/Windows%20CI/badge.svg)](https://github.com/lsils/bill/actions)
+[![Coverage Status](https://coveralls.io/repos/github/lsils/bill/badge.svg?branch=master)](https://coveralls.io/github/lsils/bill?branch=master)
 [![Documentation Status](https://readthedocs.org/projects/bill/badge/?version=latest)](https://bill.readthedocs.io/en/latest/?badge=latest)
 [![License](https://img.shields.io/badge/license-MIT-000000.svg)](https://opensource.org/licenses/MIT)
 
