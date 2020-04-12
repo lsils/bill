@@ -32,9 +32,10 @@ jobs:
         sudo apt-get install lcov
         lcov -t "result" -o lcov.info -c -d .
         lcov -e lcov.info "*bill/include*" -o lcov_filtered.info
-        lcov -l lcov_filtered.info
+        lcov -r lcov_filtered.info "*bill/include/bill/sat/solver*" -o lcov_filtered2.info
+        lcov -l lcov_filtered2.info
     - name: Coveralls
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: ./lcov_filtered.info
+        path-to-lcov: ./lcov_filtered2.info
