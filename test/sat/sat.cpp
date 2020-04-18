@@ -13,9 +13,11 @@
 
 using namespace bill;
 
-#if defined(BILL_WINDOWS_PLATFORM)
+#if defined(BILL_WINDOWS_PLATFORM) && defined(BILL_HAS_Z3)
+#define SOLVER_TYPES solver<solvers::glucose_41>, solver<solvers::ghack>, solver<solvers::z3>
+#elif defined(BILL_WINDOWS_PLATFORM) && !defined(BILL_HAS_Z3)
 #define SOLVER_TYPES solver<solvers::glucose_41>, solver<solvers::ghack>
-#elif defined(BILL_HAS_Z3)
+#elif !defined(BILL_WINDOWS_PLATFORM) && defined(BILL_HAS_Z3)
 #define SOLVER_TYPES                                                                 \
 	solver<solvers::glucose_41>, solver<solvers::ghack>, solver<solvers::maple>, \
 	    solver<solvers::bsat2>, solver<solvers::bmcg>, solver<solvers::z3>
