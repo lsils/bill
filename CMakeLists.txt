@@ -39,6 +39,9 @@ add_subdirectory(lib)
 add_library(bill INTERFACE)
 target_include_directories(bill INTERFACE ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(bill INTERFACE fmt)
+if(WIN32)
+  target_compile_definitions(bill INTERFACE NOMINMAX)
+endif()
 
 # Z3 (optional)
 # =============================================================================
