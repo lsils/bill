@@ -13,7 +13,6 @@
 
 namespace bill {
 
-#if !defined(BILL_WINDOWS_PLATFORM)
 template<>
 class solver<solvers::bsat2> {
 	using solver_type = pabc::sat_solver;
@@ -162,6 +161,5 @@ private:
 	/*! \brief Temporary storage for one clause */
 	pabc::lit literals[2048];
 };
-#endif
 
 } // namespace bill
