@@ -147,6 +147,8 @@ enum class solvers {
 #endif
 };
 
+/*! \brief Solver interface
+ */
 template<solvers Solver = solvers::ghack>
 class solver;
 
