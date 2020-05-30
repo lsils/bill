@@ -13,6 +13,13 @@ Welcome to bill's documentation!
 
 .. toctree::
    :maxdepth: 2
+   :caption: SAT solving
+
+   sat/interface_methods
+   sat/solvers
+
+.. toctree::
+   :maxdepth: 2
    :caption: Decision diagrams
 
    dd/zdd
