@@ -8,8 +8,7 @@
 #define SOLVER_TYPES bill::solver<bill::solvers::glucose_41>, bill::solver<bill::solvers::ghack>, bill::solver<bill::solvers::maple>
 #endif
 
-#include <bill/sat/unsat_core_utils.hpp>
-#include <iostream>
+#include <bill/sat/unsat_cores.hpp>
 #include <vector>
 
 using namespace bill;
