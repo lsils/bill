@@ -9,6 +9,57 @@ The C++ library *bill* serves as an integration layer for reasoning engines.  It
 Decision Diagrams
 -----------------
 
+The following code snippet uses ZDD to hold a database of words and do simple query::
+
+  #include <bill/dd/zdd.hpp>
+  #include <iostream>
+
+  int main()
+  {
+    // Words on our database
+    const char *words[] = {
+      "which", "there", "their", "about", "would", "these", "other",
+      "words", "could", "write", "first", "water", "after", "where",
+      "right", "think", "three", "years", "place", nullptr
+    };
+    // Each word has five letters, each of the 26 letter might be in one of
+    // the five positions.  Hence we need to create a ZDD with 26x5
+    // variables:
+    bill::zdd_base base(5 * 26);
+    auto dict = base.bottom(); // The dictionary starts as an empty family
+
+    // Add the words to the dictionary
+    for (uint32_t i = 0; words[i] != nullptr; ++i) {
+      auto word = base.top(); // word start with as an empty set 
+        for (uint32_t j = 0; j < 5; ++j) {
+        uint32_t var = (words[i][j] -  'a') + (26 * j);
+        auto zdd_var = base.elementary(var);
+        word = base.join(word, zdd_var);
+      }
+      dict = base.union_(dict, word);
+    }
+    base.print_sets(dict, std::cout); // Print all the words as sets
+
+    // Configure a query
+    char letter = 'h';
+    uint8_t position = 1;
+    uint32_t var = letter - 'a' + (26 * position);
+
+    // Retrieve all that satisfies the configuration
+    auto query = base.nonsupersets(dict, base.elementary(var));
+    query = base.difference(dict, query);
+    // Print words
+    base.foreach_set(query, [](auto const& set) {
+      for (uint32_t i = 0; i < 5; ++i) {
+        uint32_t letter = (set[i] - (26 * i)) + 'a';
+        std::cout << char(letter);
+      }
+      std::cout << '\n';
+      return true;
+    });
+    return EXIT_SUCCESS;
+  }
+
 Satisfiability solving
 ----------------------
 
