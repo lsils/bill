@@ -9,7 +9,7 @@ The C++ library *bill* serves as an integration layer for reasoning engines.  It
 Decision diagrams
 -----------------
 
-The following code snippet uses ZDDs to hold a database of words and do to a simple query::
+The following code snippet uses ZDDs to hold a database of words and to make a simple query::
 
   #include <bill/dd/zdd.hpp>
   #include <iostream>
