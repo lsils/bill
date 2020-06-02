@@ -11,7 +11,18 @@ Welcome to bill's documentation!
 
    installation
    changelog
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Standard library
+
    introduction
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Decision diagrams
+
+   dd/zdd
 
 .. toctree::
    :maxdepth: 2
@@ -22,12 +33,6 @@ Welcome to bill's documentation!
    sat/encodings
    sat/cardinality
    sat/unsat_cores
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Decision diagrams
-
-   dd/zdd
 
 Indices and tables
 ==================
