@@ -233,3 +233,30 @@ TEMPLATE_TEST_CASE("XOR clause", "[sat][template]", SOLVER_TYPES)
 		CHECK(solver.solve({~a, b, c}) == result::states::satisfiable);
 	}
 }
+
+TEMPLATE_TEST_CASE("Push/pop", "[sat][template]", STACKABLE_SOLVER_TYPES)
+{
+	TestType solver;
+	const auto zero = bill::lit_type{solver.add_variable()};
+	const auto a = bill::lit_type{solver.add_variable()};
+	const auto b = bill::lit_type{solver.add_variable()};
+	const auto f = bill::lit_type{solver.add_variable()};
+
+	solver.add_clause({~zero});
+	solver.add_clause({~a, b, f});
+	solver.add_clause({a, ~b, f});
+	solver.add_clause({a, b, ~f});
+	solver.add_clause({~a, ~b, ~f});
+
+	CHECK(solver.solve({f}) == bill::result::states::satisfiable);
+	
+	solver.push();
+	solver.add_clause({~a, b, ~f});
+	solver.add_clause({a, ~b, ~f});
+	solver.add_clause({a, b, f});
+	solver.add_clause({~a, ~b, f});
+	CHECK(solver.solve({f}) == bill::result::states::unsatisfiable);
+
+	solver.pop();
+	CHECK(solver.solve({f}) == bill::result::states::satisfiable);
+}
