@@ -115,6 +115,11 @@ public:
 	{
 		return std::get<model_type>(data_);
 	}
+
+	inline clause_type core() const
+	{
+		return std::get<clause_type>(data_);
+	}
 #pragma endregion
 
 #pragma region Overloads
