@@ -1,8 +1,8 @@
 Change Log
 ==========
 
-v0.1 (not yet released)
------------------------
+v0.1 (June 2, 2020)
+-------------------
 
 * Solver interfaces:
     - Generic solver interface (`solver`)
