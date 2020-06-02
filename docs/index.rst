@@ -20,6 +20,8 @@ Welcome to bill's documentation!
    sat/interface_methods
    sat/solvers
    sat/encodings
+   sat/cardinality
+   sat/unsat_cores
 
 .. toctree::
    :maxdepth: 2
