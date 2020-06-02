@@ -15,10 +15,11 @@ Welcome to bill's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: SAT solving
+   :caption: Satisfiability solving
 
    sat/interface_methods
    sat/solvers
+   sat/encodings
 
 .. toctree::
    :maxdepth: 2
