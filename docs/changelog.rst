@@ -21,3 +21,4 @@ v0.1 (not yet released)
 * Cardinality constraints:
     - At least one (`at_least_one`)
     - At most one pairwise (`at_most_one_pairwise`)
+    - Incremental totalizer constraints (`create_totalizer`,`increase_totalizer`,`merge_totalizer`,`extend_totalizer`) `#15 <https://github.com/lsils/bill/pull/15>`_
