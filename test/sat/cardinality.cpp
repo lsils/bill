@@ -5,21 +5,14 @@
 
 #include "../catch2.hpp"
 
+#include "solver_types.hpp"
+
 #include <bill/sat/incremental_totalizer_cardinality.hpp>
-#include <bill/sat/solver.hpp>
 #include <bill/sat/tseytin.hpp>
 #include <iostream>
 #include <vector>
 
 using namespace bill;
-
-#if defined(BILL_WINDOWS_PLATFORM)
-#define SOLVER_TYPES solver<solvers::glucose_41>, solver<solvers::ghack>
-#else
-#define SOLVER_TYPES                                                                 \
-	solver<solvers::glucose_41>, solver<solvers::ghack>, solver<solvers::maple>, \
-	    solver<solvers::bsat2>, solver<solvers::bmcg>
-#endif
 
 TEMPLATE_TEST_CASE("Enumerate cardiality-five solutions", "[cardinality][template]", SOLVER_TYPES)
 {
