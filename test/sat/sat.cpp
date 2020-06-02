@@ -5,6 +5,8 @@
 
 #include "../catch2.hpp"
 
+#include "solver_types.hpp"
+
 #include <bill/sat/solver.hpp>
 #include <bill/sat/tseytin.hpp>
 #include <bill/sat/xor_clauses.hpp>
@@ -12,20 +14,6 @@
 #include <vector>
 
 using namespace bill;
-
-#if defined(BILL_WINDOWS_PLATFORM) && defined(BILL_HAS_Z3)
-#define SOLVER_TYPES solver<solvers::glucose_41>, solver<solvers::ghack>, solver<solvers::bsat2>, solver<solvers::z3>
-#elif defined(BILL_WINDOWS_PLATFORM) && !defined(BILL_HAS_Z3)
-#define SOLVER_TYPES solver<solvers::glucose_41>, solver<solvers::ghack>, solver<solvers::bsat2>
-#elif !defined(BILL_WINDOWS_PLATFORM) && defined(BILL_HAS_Z3)
-#define SOLVER_TYPES                                                                 \
-	solver<solvers::glucose_41>, solver<solvers::ghack>, solver<solvers::maple>, \
-	    solver<solvers::bsat2>, solver<solvers::bmcg>, solver<solvers::z3>
-#else
-#define SOLVER_TYPES                                                                 \
-	solver<solvers::glucose_41>, solver<solvers::ghack>, solver<solvers::maple>, \
-	    solver<solvers::bsat2>, solver<solvers::bmcg>
-#endif
 
 TEMPLATE_TEST_CASE("Simple SAT", "[sat][template]", SOLVER_TYPES)
 {

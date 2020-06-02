@@ -10,6 +10,7 @@ v0.1 (not yet released)
     - GHack (`solver<solvers::ghack>`)
     - Glucose 4.1 (`solver<solvers::glucose_41>`)
     - ABC bsat2 (`solver<solvers::bsat2>`)
+    - Z3 (`solver<solvers::z3>`) `#21 https://github.com/lsils/bill/pull/21`_
 * Types:
     - Wrapper for variables (`var_type`)
     - Wrapper for literals (`lit_type`)
@@ -20,3 +21,4 @@ v0.1 (not yet released)
 * Cardinality constraints:
     - At least one (`at_least_one`)
     - At most one pairwise (`at_most_one_pairwise`)
+    - Incremental totalizer constraints (`create_totalizer`,`increase_totalizer`,`merge_totalizer`,`extend_totalizer`) `#15 <https://github.com/lsils/bill/pull/15>`_
