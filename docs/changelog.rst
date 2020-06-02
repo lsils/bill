@@ -11,6 +11,7 @@ v0.1 (not yet released)
     - Glucose 4.1 (`solver<solvers::glucose_41>`)
     - ABC bsat2 (`solver<solvers::bsat2>`)
     - Z3 (`solver<solvers::z3>`) `#21 <https://github.com/lsils/bill/pull/21>`_
+    - Stacking of solver state and randomization (`solver<solvers::bsat2>` and `solver<solvers::z3>`) `#34 <https://github.com/lsils/bill/pull/34>`_
 * Types:
     - Wrapper for variables (`var_type`)
     - Wrapper for literals (`lit_type`)
