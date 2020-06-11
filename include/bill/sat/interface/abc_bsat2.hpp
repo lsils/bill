@@ -20,7 +20,7 @@ class solver<solvers::bsat2> {
 
 public:
 #pragma region Constructors
-	solver() : var_ctr_( 1, 0u ), cls_ctr_( 1, 0u )
+	solver() : var_ctr_( 1, 0u ), cls_ctr_( 1, 0 )
 	{
 		solver_ = pabc::sat_solver_new();
 	}
@@ -45,7 +45,7 @@ public:
 		var_ctr_.clear();
 		var_ctr_.emplace_back( 0u );
 		cls_ctr_.clear();
-		cls_ctr_.emplace_back( 0u );
+		cls_ctr_.emplace_back( 0 );
 	}
 
 	var_type add_variable()
@@ -84,6 +84,7 @@ public:
 
 	auto add_clause(lit_type lit)
 	{
+		--cls_ctr_.back(); /* do not count unit clauses */
 		return add_clause(std::vector<lit_type>{lit});
 	}
 
@@ -210,7 +211,7 @@ private:
 	std::default_random_engine random;
 	bool randomize = false;
 	std::vector<uint32_t> var_ctr_;
-	std::vector<uint32_t> cls_ctr_;
+	std::vector<int> cls_ctr_;
 };
 
 } // namespace bill

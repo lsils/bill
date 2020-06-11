@@ -242,12 +242,14 @@ TEMPLATE_TEST_CASE("Push/pop", "[sat][template]", STACKABLE_SOLVER_TYPES)
 	const auto b = bill::lit_type{solver.add_variable()};
 	const auto f = bill::lit_type{solver.add_variable()};
 
-	solver.add_clause({~zero});
+	solver.add_clause(~zero);
 	solver.add_clause({~a, b, f});
 	solver.add_clause({a, ~b, f});
 	solver.add_clause({a, b, ~f});
 	solver.add_clause({~a, ~b, ~f});
 
+	CHECK(solver.num_variables() == 4u);
+	CHECK(solver.num_clauses() == 4u);
 	CHECK(solver.solve({f}) == bill::result::states::satisfiable);
 	
 	solver.push();
@@ -258,5 +260,7 @@ TEMPLATE_TEST_CASE("Push/pop", "[sat][template]", STACKABLE_SOLVER_TYPES)
 	CHECK(solver.solve({f}) == bill::result::states::unsatisfiable);
 
 	solver.pop();
+	CHECK(solver.num_variables() == 4u);
+	CHECK(solver.num_clauses() == 4u);
 	CHECK(solver.solve({f}) == bill::result::states::satisfiable);
 }
