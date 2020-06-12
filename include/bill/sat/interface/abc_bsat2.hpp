@@ -8,9 +8,9 @@
 #include "types.hpp"
 
 #include <memory>
+#include <random>
 #include <variant>
 #include <vector>
-#include <random>
 
 namespace bill {
 
@@ -20,7 +20,9 @@ class solver<solvers::bsat2> {
 
 public:
 #pragma region Constructors
-	solver() : variable_counter( 1, 0u ), clause_counter( 1, 0 )
+	solver()
+	    : variable_counter(1, 0u)
+	    , clause_counter(1, 0)
 	{
 		solver_ = pabc::sat_solver_new();
 	}
@@ -43,9 +45,9 @@ public:
 		state_ = result::states::undefined;
 		randomize = false;
 		variable_counter.clear();
-		variable_counter.emplace_back( 0u );
+		variable_counter.emplace_back(0u);
 		clause_counter.clear();
-		clause_counter.emplace_back( 0 );
+		clause_counter.emplace_back(0);
 	}
 
 	var_type add_variable()
@@ -120,17 +122,16 @@ public:
 		if (num_variables() == 0u)
 			return result::states::undefined;
 
-		if ( randomize )
-		{
+		if (randomize) {
 			std::vector<uint32_t> vars;
-			for ( auto i = 0u; i < num_variables(); ++i )
-			{
-				if ( random() % 2 )
-				{
-					vars.push_back( i );
+			for (auto i = 0u; i < num_variables(); ++i) {
+				if (random() % 2) {
+					vars.push_back(i);
 				}
 			}
-			pabc::sat_solver_set_polarity( solver_, (int*)(const_cast<uint32_t*>(vars.data())), vars.size() );
+			pabc::sat_solver_set_polarity(solver_,
+			                              (int*) (const_cast<uint32_t*>(vars.data())),
+			                              vars.size());
 		}
 
 		int result;
@@ -179,23 +180,23 @@ public:
 	void push()
 	{
 		pabc::sat_solver_bookmark(solver_);
-		variable_counter.emplace_back( variable_counter.back() );
-		clause_counter.emplace_back( clause_counter.back() );
+		variable_counter.emplace_back(variable_counter.back());
+		clause_counter.emplace_back(clause_counter.back());
 	}
 
-	void pop( uint32_t num_levels = 1u )
+	void pop(uint32_t num_levels = 1u)
 	{
-		assert( num_levels == 1u && "bsat does not support multiple step pop" );
+		assert(num_levels == 1u && "bsat does not support multiple step pop");
 		pabc::sat_solver_rollback(solver_);
-		variable_counter.resize( variable_counter.size() - num_levels );
-		clause_counter.resize( clause_counter.size() - num_levels );
+		variable_counter.resize(variable_counter.size() - num_levels);
+		clause_counter.resize(clause_counter.size() - num_levels);
 	}
 
-	void set_random_phase( uint32_t seed = 0u )
+	void set_random_phase(uint32_t seed = 0u)
 	{
 		randomize = true;
 		pabc::sat_solver_set_random(solver_, 1);
-		random.seed( seed );
+		random.seed(seed);
 	}
 
 private:

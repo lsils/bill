@@ -21,9 +21,10 @@ class solver<solvers::z3> {
 public:
 #pragma region Constructors
 	solver()
-	    : solver_(ctx_), variable_counter_( 1, 0u ), clause_counter_( 1, 0u )
-	{
-	}
+	    : solver_(ctx_)
+	    , variable_counter_(1, 0u)
+	    , clause_counter_(1, 0u)
+	{}
 
 	~solver()
 	{}
@@ -39,9 +40,9 @@ public:
 		solver_.reset();
 		vars_.clear();
 		variable_counter_.clear();
-		variable_counter_.emplace_back( 0u );
+		variable_counter_.emplace_back(0u);
 		clause_counter_.clear();
-		clause_counter_.emplace_back( 0u );
+		clause_counter_.emplace_back(0u);
 		state_ = result::states::undefined;
 	}
 
@@ -112,7 +113,9 @@ public:
 		for (auto const& lit : assumptions)
 			vec.push_back(lit.is_complemented() ? !vars_[lit.variable()] :
 			                                      vars_[lit.variable()]);
-		solver_.set("sat.max_conflicts", conflict_limit == 0u ? std::numeric_limits<uint32_t>::max() : conflict_limit);
+		solver_.set("sat.max_conflicts", conflict_limit == 0u ?
+		                                     std::numeric_limits<uint32_t>::max() :
+		                                     conflict_limit);
 		switch (solver_.check(vec)) {
 		case z3::sat:
 			state_ = result::states::satisfiable;
@@ -145,23 +148,22 @@ public:
 	void push()
 	{
 		solver_.push();
-		variable_counter_.emplace_back( variable_counter_.back() );
-		clause_counter_.emplace_back( clause_counter_.back() );
+		variable_counter_.emplace_back(variable_counter_.back());
+		clause_counter_.emplace_back(clause_counter_.back());
 	}
 
-	void pop( uint32_t num_levels = 1u )
+	void pop(uint32_t num_levels = 1u)
 	{
-		assert( num_levels < variable_counter_.size() );
-		solver_.pop( num_levels );
-		variable_counter_.resize( variable_counter_.size() - num_levels );
-		clause_counter_.resize( clause_counter_.size() - num_levels );
-		if ( vars_.size() > variable_counter_.back() )
-		{
-			vars_.erase( vars_.begin() + variable_counter_.back(), vars_.end() );
+		assert(num_levels < variable_counter_.size());
+		solver_.pop(num_levels);
+		variable_counter_.resize(variable_counter_.size() - num_levels);
+		clause_counter_.resize(clause_counter_.size() - num_levels);
+		if (vars_.size() > variable_counter_.back()) {
+			vars_.erase(vars_.begin() + variable_counter_.back(), vars_.end());
 		}
 	}
 
-	void set_random_phase( uint32_t seed = 0u )
+	void set_random_phase(uint32_t seed = 0u)
 	{
 		solver_.set("sat.random_seed", seed);
 		solver_.set("phase_selection", 5u);
