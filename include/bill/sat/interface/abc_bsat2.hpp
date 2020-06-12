@@ -20,7 +20,7 @@ class solver<solvers::bsat2> {
 
 public:
 #pragma region Constructors
-	solver() : var_ctr_( 1, 0u ), cls_ctr_( 1, 0 )
+	solver() : variable_counter( 1, 0u ), clause_counter( 1, 0 )
 	{
 		solver_ = pabc::sat_solver_new();
 	}
@@ -42,21 +42,21 @@ public:
 		pabc::sat_solver_restart(solver_);
 		state_ = result::states::undefined;
 		randomize = false;
-		var_ctr_.clear();
-		var_ctr_.emplace_back( 0u );
-		cls_ctr_.clear();
-		cls_ctr_.emplace_back( 0 );
+		variable_counter.clear();
+		variable_counter.emplace_back( 0u );
+		clause_counter.clear();
+		clause_counter.emplace_back( 0 );
 	}
 
 	var_type add_variable()
 	{
-		++var_ctr_.back();
+		++variable_counter.back();
 		return pabc::sat_solver_addvar(solver_);
 	}
 
 	void add_variables(uint32_t num_variables = 1)
 	{
-		var_ctr_.back() += num_variables;
+		variable_counter.back() += num_variables;
 		for (auto i = 0u; i < num_variables; ++i) {
 			pabc::sat_solver_addvar(solver_);
 		}
@@ -65,7 +65,7 @@ public:
 	auto add_clause(std::vector<lit_type>::const_iterator it,
 	                std::vector<lit_type>::const_iterator ie)
 	{
-		++cls_ctr_.back();
+		++clause_counter.back();
 		auto counter = 0u;
 		while (it != ie) {
 			literals[counter++] = pabc::Abc_Var2Lit(it->variable(),
@@ -84,7 +84,7 @@ public:
 
 	auto add_clause(lit_type lit)
 	{
-		--cls_ctr_.back(); /* do not count unit clauses */
+		--clause_counter.back(); /* do not count unit clauses */
 		return add_clause(std::vector<lit_type>{lit});
 	}
 
@@ -165,30 +165,30 @@ public:
 #pragma region Properties
 	uint32_t num_variables() const
 	{
-		return var_ctr_.back();
-		//return pabc::sat_solver_nvars(solver_);
+		return variable_counter.back();
+		/* Note: `pabc::sat_solver_nvars(solver_)` is not correct when bookmark/rollback is used */
 	}
 
 	uint32_t num_clauses() const
 	{
-		return cls_ctr_.back();
-		//return pabc::sat_solver_nclauses(solver_);
+		return clause_counter.back();
+		/* Note: `pabc::sat_solver_nclauses(solver_)` is not correct when bookmark/rollback is used */
 	}
 #pragma endregion
 
 	void push()
 	{
 		pabc::sat_solver_bookmark(solver_);
-		var_ctr_.emplace_back( var_ctr_.back() );
-		cls_ctr_.emplace_back( cls_ctr_.back() );
+		variable_counter.emplace_back( variable_counter.back() );
+		clause_counter.emplace_back( clause_counter.back() );
 	}
 
-	void pop( uint32_t n = 1u )
+	void pop( uint32_t num_levels = 1u )
 	{
-		assert( n == 1u && "bsat does not support multiple step pop" ); (void)n;
-	    pabc::sat_solver_rollback(solver_);
-	    var_ctr_.resize( var_ctr_.size() - 1 );
-		cls_ctr_.resize( cls_ctr_.size() - 1 );
+		assert( num_levels == 1u && "bsat does not support multiple step pop" );
+		pabc::sat_solver_rollback(solver_);
+		variable_counter.resize( variable_counter.size() - num_levels );
+		clause_counter.resize( clause_counter.size() - num_levels );
 	}
 
 	void set_random_phase( uint32_t seed = 0u )
@@ -208,10 +208,15 @@ private:
 	/*! \brief Temporary storage for one clause */
 	pabc::lit literals[2048];
 
-	std::default_random_engine random;
+	/*! \brief Whether to randomize initial variable values */
 	bool randomize = false;
-	std::vector<uint32_t> var_ctr_;
-	std::vector<int> cls_ctr_;
+	std::default_random_engine random;
+
+	/*! \brief Stacked counter for number of variables */
+	std::vector<uint32_t> variable_counter;
+
+	/*! \brief Stacked counter for number of clauses */
+	std::vector<int> clause_counter;
 };
 
 } // namespace bill
