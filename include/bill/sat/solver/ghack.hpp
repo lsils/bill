@@ -5073,7 +5073,16 @@ inline void SimpSolver::garbageCollect()
 }
 
 #undef write_char
-
-inline void function()
-{
-}
+#undef var_Undef
+#undef DYNAMICNBLEVEL
+#undef CONSTANTREMOVECLAUSE
+#undef UPDATEVARACTIVITY
+#undef RATIOREMOVECLAUSES
+#undef LOWER_BOUND_FOR_BLOCKING_RESTART
+#undef M
+#undef Q
+#undef P
+#undef B
+#undef S
+#undef EE
+#undef X
