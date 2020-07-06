@@ -139,7 +139,7 @@ public:
 
 		int result;
 		if (assumptions.size() > 0u) {
-			assert(ie-it <= BUFFER_SIZE && "assumption size exceeds limit. Please increase BUFFER_SIZE in bill/sat/interface/abc_bsat2.hpp");
+			assert(assumptions.size() <= BUFFER_SIZE && "assumption size exceeds limit. Please increase BUFFER_SIZE in bill/sat/interface/abc_bsat2.hpp");
 			/* solve with assumptions */
 			uint32_t counter = 0u;
 			auto it = assumptions.begin();
