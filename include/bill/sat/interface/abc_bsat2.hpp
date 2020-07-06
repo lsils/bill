@@ -14,11 +14,10 @@
 
 namespace bill {
 
-#define BUFFER_SIZE 2048
-
 template<>
 class solver<solvers::bsat2> {
 	using solver_type = pabc::sat_solver;
+	static constexpr uint32_t BUFFER_SIZE = 2048;
 
 public:
 #pragma region Constructors
