@@ -3,9 +3,9 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <sstream>
 #include <unordered_map>
-#include <array>
-#include <utility>
+#include <fmt/format.h>
 
 namespace cudd {
 
@@ -27,12 +27,10 @@ public:
     }
     assert( cudd.ReadZddSize() == int( num_variables ) );
     assert( Cudd_DebugCheck( cudd.getManager() ) == 0 );
-    //cudd.makeVerbose();
   }
 
   ~cudd_zdd()
   {
-    cudd.makeTerse(); 
   }
 
   void print( ZDD const& node, std::string const& name = "", int verbosity = 4 )
@@ -44,7 +42,6 @@ public:
   ZDD ref( ZDD const& node )
   {
     Cudd_Ref( node.getNode() );
-    assert( Cudd_DebugCheck( cudd.getManager() ) == 0 );
     return node;
   }
 
@@ -58,7 +55,6 @@ public:
   void deref( ZDD const& node )
   {
     Cudd_Deref( node.getNode() );
-    assert( Cudd_DebugCheck( cudd.getManager() ) == 0 );
   }
 
   /* Create a node at level `var`, whose "then" child points to `T` and "else" child points to `E`,
@@ -139,8 +135,6 @@ public: /* operations not provided by CUDD */
    */
   ZDD care( std::vector<uint32_t> const& vec )
   {
-    //std::cout<<"[i] care computation\n";
-    assert( Cudd_DebugCheck( cudd.getManager() ) == 0 );
     DdNode* n1 = base.getNode();
     DdNode* n2 = 0;
 
@@ -193,27 +187,19 @@ private: /* implementation details */
   DdNode* ref( DdNode* node ) { Cudd_Ref( node ); return node; }
   DdNode* deref( DdNode* node )
   {
-    //Cudd_Deref( node );
-    //std::cout<<"> deref node "<<node<<" (r = "<<node->ref<<")\n";
-    //return node;
-
     cuddSatDec( node->ref );
     if ( node->ref == 0 )
     {
       DdManager * table = cudd.getManager();
-      //std::cout<<"    [i] deref is killing node"; Cudd_zddPrintDebug(table,node,num_variables,4);
-
       table->deadZ++;
       #ifdef DD_STATS
         table->nodesDropped++;
       #endif
-      #ifdef DD_DEBUG
-        assert(!cuddIsConstant(node));
-      #endif
+      assert( !cuddIsConstant( node ) );
       int ord = table->permZ[node->index];
       table->subtableZ[ord].dead++;
-      if (!cuddIsConstant(cuddT(node))) { assert(cuddT(node)->ref != 0); Cudd_RecursiveDerefZdd(table, cuddT(node)); }
-      if (!cuddIsConstant(cuddE(node))) { assert(cuddE(node)->ref != 0); Cudd_RecursiveDerefZdd(table, cuddE(node)); }
+      if ( !cuddIsConstant( cuddT( node ) ) ) { assert( cuddT( node )->ref != 0 ); Cudd_RecursiveDerefZdd( table, cuddT( node ) ); }
+      if ( !cuddIsConstant( cuddE( node ) ) ) { assert( cuddE( node )->ref != 0 ); Cudd_RecursiveDerefZdd( table, cuddE( node ) ); }
     }
     return node; 
   }
@@ -230,13 +216,13 @@ private: /* implementation details */
   DdNode* difference( DdNode* f, DdNode* g )
   { return Cudd_zddDiff( cudd.getManager(), f, g ); }
 
+  /* replacement of function pointers to be used in the operation cache */
   uint64_t join_ = 2;
   uint64_t nonsupersets_ = 4;
   uint64_t choose_ = 6;
 
   DdNode* join( DdNode* f, DdNode* g )
   {
-    //std::cout<<"[i] compute join\n";
     /* terminal cases */
     DdNode* e = empty.getNode();
     DdNode* b = base.getNode();
@@ -288,7 +274,6 @@ private: /* implementation details */
 
   DdNode* nonsupersets( DdNode* f, DdNode* g )
   {
-    //std::cout<<"[i] compute nonsupersets\n";
     /* terminal cases */
     DdNode* e = empty.getNode();
     DdNode* b = base.getNode();
@@ -327,7 +312,6 @@ private: /* implementation details */
 
   DdNode* choose( DdNode* f, uint64_t k )
   {
-    //std::cout<<"[i] compute choose with k = "<<k<<"\n";
     if ( Cudd_NodeReadIndex( f ) >= num_variables )
     {
       return k > 0 ? empty.getNode() : base.getNode();
@@ -349,7 +333,7 @@ private: /* implementation details */
     return r;
   }
 
-private: /* iterator */
+private: /* iterator, counting, etc */
   template<class Fn>
   bool foreach_set_rec( DdNode* f, std::vector<uint32_t>& set, Fn&& fn ) const
   {
@@ -373,6 +357,25 @@ private: /* iterator */
     return true;
   }
 
+  uint64_t count_sets_rec( DdNode* f, std::unordered_map<DdNode*, uint64_t>& visited ) const
+  {
+    if ( f == base.getNode() )
+    {
+      return 1;
+    }
+    if ( f == empty.getNode() )
+    {
+      return 0;
+    }
+
+    const auto it = visited.find( f );
+    if ( it != visited.end() )
+    {
+      return it->second;
+    }
+    return visited[f] = count_sets_rec( cuddE( f ), visited ) + count_sets_rec( cuddT( f ), visited );
+  }
+
 public:
   /* a set is represented with a `std::vector<uint32_t>` of variable indices */
   template<class Fn>
@@ -382,14 +385,48 @@ public:
     foreach_set_rec( f.getNode(), set, fn );
   }
 
-private: /* operation cache */
-  DdNode * cache_lookup(
-  DdManager * table,
-  uint64_t op,
-  DdNode * f,
-  DdNode * g)
+  void print_sets( ZDD const& f, std::ostream& os = std::cout ) const
   {
-    //std::cout<<"[i] cache lookup\n";
+    foreach_set( f, [&]( auto const& set ){
+      os << fmt::format("{{ {} }}\n", fmt::join( set, ", " ) );
+      return true;
+    });
+  }
+
+  /* \!brief Return the number of nodes in a ZDD. */
+  uint64_t count_nodes( DdNode* f ) const
+  {
+    return Cudd_zddDagSize(f);
+  }
+
+  /* \!brief Return the number of sets in a ZDD. */
+  uint64_t count_sets( ZDD const& f ) const
+  {
+    if ( f.getNode() == base.getNode() )
+    {
+      return 1;
+    }
+    if ( f.getNode() == empty.getNode() )
+    {
+      return 0;
+    }
+    std::unordered_map<DdNode*, uint64_t> visited;
+    return count_sets_rec( f.getNode(), visited );
+  }
+
+  std::vector<std::vector<uint32_t>> sets_as_vectors( ZDD const& f ) const
+  {
+    std::vector<std::vector<uint32_t>> sets_vectors;
+    foreach_set( f, [&]( auto const& set ){
+      sets_vectors.emplace_back( set );
+      return true;
+    });
+    return sets_vectors;
+  }
+
+private: /* operation cache */
+  DdNode * cache_lookup( DdManager * table, uint64_t op, DdNode * f, DdNode * g )
+  {
     int posn;
     DdCache *en,*cache;
     DdNode *data;
@@ -422,12 +459,7 @@ private: /* operation cache */
     return(NULL);
   }
 
-  void cache_insert(
-  DdManager * table,
-  uint64_t op,
-  DdNode * f,
-  DdNode * g,
-  DdNode * data)
+  void cache_insert( DdManager * table, uint64_t op, DdNode * f, DdNode * g, DdNode * data )
   {
     int posn;
     DdCache *entry;
