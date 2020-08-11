@@ -112,7 +112,7 @@ CHECK_TYPE_SIZE("long double" SIZEOF_LONG_DOUBLE)
 
 include(CheckFunctionExists)
 
-set(CMAKE_REQUIRED_INCLUDES "math.h")
+set(CMAKE_REQUIRED_INCLUDES "math.h;cmath;string.h;cstring")
 set(CMAKE_REQUIRED_LIBRARIES m)
 
 CHECK_FUNCTION_EXISTS(pow HAVE_POW LANGUAGE CXX)
