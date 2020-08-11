@@ -110,28 +110,28 @@ CHECK_TYPE_SIZE(long SIZEOF_LONG)
 CHECK_TYPE_SIZE("void*" SIZEOF_VOID_P)
 CHECK_TYPE_SIZE("long double" SIZEOF_LONG_DOUBLE)
 
-include(CheckSymbolExists)
+include(CheckCXXSymbolExists)
 
 set(CMAKE_REQUIRED_INCLUDES "math.h")
 set(CMAKE_REQUIRED_LIBRARIES m)
 
-CHECK_SYMBOL_EXISTS(pow "math.h" HAVE_POW)
-CHECK_SYMBOL_EXISTS(sqrt "math.h" HAVE_SQRT)
-CHECK_SYMBOL_EXISTS(strchr "string.h" HAVE_STRCHR)
-CHECK_SYMBOL_EXISTS(strstr "string.h" HAVE_STRSTR)
+CHECK_CXX_SYMBOL_EXISTS(pow "math.h" HAVE_POW)
+CHECK_CXX_SYMBOL_EXISTS(sqrt "math.h" HAVE_SQRT)
+CHECK_CXX_SYMBOL_EXISTS(strchr "string.h" HAVE_STRCHR)
+CHECK_CXX_SYMBOL_EXISTS(strstr "string.h" HAVE_STRSTR)
 
 if(NOT (HAVE_POW AND HAVE_SQRT AND HAVE_STRCHR AND HAVE_STRSTR))
   message(FATAL_ERROR "One or more mandatory functions missing.")
 endif()
 
-CHECK_SYMBOL_EXISTS(powl "math.h" HAVE_POWL)
-CHECK_SYMBOL_EXISTS(gethostname "winsock.h" HAVE_GETHOSTNAME)
-CHECK_SYMBOL_EXISTS(getrlimit "sys/resource.h" HAVE_GETRLIMIT)
-CHECK_SYMBOL_EXISTS(getrusage "sys/resource.h" HAVE_GETRUSAGE)
-CHECK_SYMBOL_EXISTS(sysconf "unistd.h" HAVE_SYSCONF)
+CHECK_CXX_SYMBOL_EXISTS(powl "math.h" HAVE_POWL)
+CHECK_CXX_SYMBOL_EXISTS(gethostname "winsock.h" HAVE_GETHOSTNAME)
+CHECK_CXX_SYMBOL_EXISTS(getrlimit "sys/resource.h" HAVE_GETRLIMIT)
+CHECK_CXX_SYMBOL_EXISTS(getrusage "sys/resource.h" HAVE_GETRUSAGE)
+CHECK_CXX_SYMBOL_EXISTS(sysconf "unistd.h" HAVE_SYSCONF)
 
-include(CheckCSourceCompiles)
-CHECK_C_SOURCE_COMPILES(
+include(CheckCXXSourceCompiles)
+CHECK_CXX_SOURCE_COMPILES(
   "#include <math.h>
   int main() { double x = INFINITY; }
   " HAVE_IEEE_754)
