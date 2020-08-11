@@ -3,7 +3,7 @@
 | See accompanying file /LICENSE for details.
 *------------------------------------------------------------------------------------------------*/
 #include "../catch2.hpp"
-#include "cudd_wrapper.hpp"
+#include <bill/dd/cudd_zdd.hpp>
 
 TEST_CASE("CUDD ZDD choose operator", "[cudd]")
 {
@@ -21,7 +21,7 @@ TEST_CASE("CUDD ZDD choose operator", "[cudd]")
   CHECK(os.str() == "{ 1, 2 }\n{ 0, 2 }\n{ 0, 1 }\n");
 }
 
-TEST_CASE("CUDD ZDD join operator (*)", "[zdd]")
+TEST_CASE("CUDD ZDD join operator (*)", "[cudd]")
 {
   std::ostringstream os;
   cudd::cudd_zdd zdd(7);
