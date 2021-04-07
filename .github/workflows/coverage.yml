@@ -9,9 +9,9 @@ on:
     - master
 
 jobs:
-  build-gcc7-coveralls:
+  build-gcc9-codecov:
     runs-on: ubuntu-latest
-    name: GNU GCC 7 and run coveralls
+    name: GNU GCC 9 and run codecov
     
     steps:
     - uses: actions/checkout@v1
@@ -21,7 +21,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake -DCMAKE_CXX_COMPILER=g++-7 -DBILL_TEST=ON -DENABLE_COVERAGE=ON ..
+        cmake -DCMAKE_CXX_COMPILER=g++-9 -DBILL_TEST=ON -DENABLE_COVERAGE=ON ..
         make run_tests
     - name: Run tests
       run: |
@@ -34,8 +34,6 @@ jobs:
         lcov -e lcov.info "*bill/include*" -o lcov_filtered.info
         lcov -r lcov_filtered.info "*bill/include/bill/sat/solver*" -o lcov_filtered2.info
         lcov -l lcov_filtered2.info
-    - name: Coveralls
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: ./lcov_filtered2.info
+    - name: CodeCov
+      run: |
+        bash <(curl -s https://codecov.io/bash) -f lcov_filtered2.info || echo "Codecov did not collect coverage reports"
