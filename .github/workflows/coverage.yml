@@ -35,5 +35,6 @@ jobs:
         lcov -r lcov_filtered.info "*bill/include/bill/sat/solver*" -o lcov_filtered2.info
         lcov -l lcov_filtered2.info
     - name: CodeCov
-      run: |
-        bash <(curl -s https://codecov.io/bash) -f lcov_filtered2.info || echo "Codecov did not collect coverage reports"
+      uses: codecov/codecov-action@v2
+      with:
+        files: ./lcov_filtered2.info
