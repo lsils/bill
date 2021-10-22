@@ -9,24 +9,6 @@ on:
     - master
 
 jobs:
-  build-gcc8:
-    name: GNU GCC 8
-    runs-on: macOS-latest
-
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        submodules: true
-    - name: Build bill
-      run: |
-        mkdir build
-        cd build
-        cmake -DCMAKE_CXX_COMPILER=/usr/local/opt/gcc@8/bin/g++-8 -DBILL_TEST=ON ..
-        make run_tests
-    - name: Run tests
-      run: |
-        cd build
-        ./test/run_tests
   build-gcc9:
     name: GNU GCC 9
     runs-on: macOS-latest
@@ -45,8 +27,8 @@ jobs:
       run: |
         cd build
         ./test/run_tests
-  build-clang9:
-    name: Clang 9
+  build-clang12:
+    name: Clang 12
     runs-on: macOS-latest
 
     steps:
