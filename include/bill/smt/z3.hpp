@@ -123,19 +123,19 @@ public:
         switch (type)
         {
         case lp_types::geq:
-            solver_.add(z3::implies(cond, expr >= ctx_.real_val(rhs, 1)));
+            solver_.add(cond == (expr >= ctx_.real_val(rhs, 1)));
             return cond_var;
         case lp_types::leq:
-            solver_.add(z3::implies(cond, expr <= ctx_.real_val(rhs, 1)));
+            solver_.add(cond == (expr <= ctx_.real_val(rhs, 1)));
             return cond_var;
         case lp_types::eq:
-            solver_.add(z3::implies(cond, expr == ctx_.real_val(rhs, 1)));
+            solver_.add(cond == (expr == ctx_.real_val(rhs, 1)));
             return cond_var;
         case lp_types::greater:
-            solver_.add(z3::implies(cond, expr > ctx_.real_val(rhs, 1)));
+            solver_.add(cond == (expr > ctx_.real_val(rhs, 1)));
             return cond_var;
         case lp_types::less:
-            solver_.add(z3::implies(cond, expr < ctx_.real_val(rhs, 1)));
+            solver_.add(cond == (expr < ctx_.real_val(rhs, 1)));
             return cond_var;
         default:
             assert(false && "unknown LP constraint type");
@@ -154,19 +154,19 @@ public:
         switch (type)
         {
         case lp_types::geq:
-            solver_.add(z3::implies(cond, expr >= rhs));
+            solver_.add( cond == (expr >= rhs) );
             return cond_var;
         case lp_types::leq:
-            solver_.add(z3::implies(cond, expr <= rhs));
+            solver_.add( cond == (expr <= rhs) );
             return cond_var;
         case lp_types::eq:
-            solver_.add(z3::implies(cond, expr == rhs));
+            solver_.add( cond == (expr == rhs) );
             return cond_var;
         case lp_types::greater:
-            solver_.add(z3::implies(cond, expr > rhs));
+            solver_.add( cond == (expr > rhs) );
             return cond_var;
         case lp_types::less:
-            solver_.add(z3::implies(cond, expr < rhs));
+            solver_.add( cond == (expr < rhs) );
             return cond_var;
         default:
             assert(false && "unknown LP constraint type");
@@ -197,6 +197,33 @@ public:
     {
         assert(is_boolean_type(v));
         solver_.add(!vars_[v]);
+    }
+
+    void add_pseudo_boolean_constraint(std::vector<var_t> const& var_set, int32_t rhs, lp_types type)
+    {
+        assert( is_all_boolean(var_set) );
+        z3::expr_vector vec(ctx_);
+
+        for ( auto i = 0u; i < var_set.size(); ++i )
+        {
+            vec.push_back(vars_[var_set[i]]);
+        }
+
+        switch (type)
+        {
+        case lp_types::geq:
+            solver_.add(z3::atleast(vec, rhs));
+            break;
+        case lp_types::leq:
+            solver_.add(z3::atmost(vec, rhs));
+            break;
+        case lp_types::eq:
+            solver_.add(z3::atmost(vec, rhs));
+            solver_.add(z3::atleast(vec, rhs));
+            break;
+        default:
+            assert(false && "unknown PB constraint type");
+        }
     }
 
     template<bool enabled = has_objective, typename = std::enable_if_t<enabled>>
